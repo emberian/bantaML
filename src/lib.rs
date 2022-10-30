@@ -1,6 +1,7 @@
 //! Project-level documentation.
-#![feature(c_variadic)]
+#![feature(c_variadic,extern_types)]
 #![allow(clippy::module_name_repetitions)]
+#![allow(unused_parens)]
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -8,7 +9,7 @@
     non_snake_case,
     non_upper_case_globals,
     unused_assignments,
-    unused_mut
+    unused_mut,unused_unsafe,unused_variables,
 )]
 #![register_tool(c2rust)]
 #![feature(register_tool)]
