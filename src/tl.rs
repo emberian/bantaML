@@ -1,12 +1,12 @@
 //! A c2rust transpilation plus gradual porting of TinyLisp
 
-mod builtin;
-mod debug;
-mod env;
-mod eval;
-mod interp;
-mod main;
-mod ns;
-mod object;
-mod print;
-mod read;
+pub mod builtin;
+pub mod debug;
+pub mod env;
+pub mod eval;
+pub mod interp;
+pub mod main;
+pub mod ns;
+pub mod object;
+pub mod print;
+pub mod read;

@@ -81,6 +81,10 @@ pub use config::CONFIG;
 
 pub mod tl;
 
+pub fn main() {
+    tl::main::main();
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
