@@ -1,5 +1,3 @@
-//! A c2rust transpilation plus gradual porting of TinyLisp
-
 pub mod builtin;
 pub mod debug;
 pub mod env;
@@ -10,3 +8,4 @@ pub mod ns;
 pub mod object;
 pub mod print;
 pub mod read;
+pub mod tinylisp_h;

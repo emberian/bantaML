@@ -1,212 +1,68 @@
-extern "C" {
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
-    fn snprintf(
-        _: *mut libc::c_char,
-        _: libc::c_ulong,
-        _: *const libc::c_char,
-        _: ...
-    ) -> libc::c_int;
-    fn free(_: *mut libc::c_void);
-    fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
-        __line: libc::c_uint,
-        __function: *const libc::c_char,
-    ) -> !;
-    fn tl_new_int(_: *mut tl_interp, _: libc::c_long) -> *mut tl_object;
-    fn tl_new_sym(_: *mut tl_interp, _: *const libc::c_char) -> *mut tl_object;
-    fn tl_new_sym_data(_: *mut tl_interp, _: *const libc::c_char, _: size_t) -> *mut tl_object;
-    fn tl_new_pair(_: *mut tl_interp, _: *mut tl_object, _: *mut tl_object) -> *mut tl_object;
-    fn tl_new_macro(
-        _: *mut tl_interp,
-        _: *mut tl_object,
-        _: *mut tl_object,
-        _: *mut tl_object,
-        _: *mut tl_object,
-    ) -> *mut tl_object;
-    fn tl_new_cont(
-        _: *mut tl_interp,
-        _: *mut tl_object,
-        _: *mut tl_object,
-        _: *mut tl_object,
-    ) -> *mut tl_object;
-    fn tl_gc(_: *mut tl_interp);
-    fn tl_list_len(_: *mut tl_object) -> size_t;
-    fn tl_env_set_global(
-        _: *mut tl_interp,
-        _: *mut tl_object,
-        _: *mut tl_object,
-        _: *mut tl_object,
-    ) -> *mut tl_object;
-    fn tl_env_set_local(
-        _: *mut tl_interp,
-        _: *mut tl_object,
-        _: *mut tl_object,
-        _: *mut tl_object,
-    ) -> *mut tl_object;
-    fn tl_print(_: *mut tl_interp, _: *mut tl_object) -> *mut tl_object;
-    fn tl_printf(_: *mut tl_interp, _: *const libc::c_char, _: ...);
-    fn tl_push_eval(_: *mut tl_interp, _: *mut tl_object, _: *mut tl_object) -> libc::c_int;
-    fn tl_push_apply(_: *mut tl_interp, _: libc::c_long, _: *mut tl_object, _: *mut tl_object);
-    fn _tl_eval_and_then(
-        _: *mut tl_interp,
-        _: *mut tl_object,
-        _: *mut tl_object,
-        _: Option<unsafe extern "C" fn(*mut tl_interp, *mut tl_object, *mut tl_object) -> ()>,
-        _: *const libc::c_char,
-    );
-    fn _tl_getc_and_then(
-        _: *mut tl_interp,
-        _: *mut tl_object,
-        _: Option<unsafe extern "C" fn(*mut tl_interp, *mut tl_object, *mut tl_object) -> ()>,
-        _: *const libc::c_char,
-    );
-    fn tl_read(_: *mut tl_interp);
+use ::libc;
+#[c2rust::header_src = "/usr/lib/llvm-14/lib/clang/14.0.0/include/stddef.h:1"]
+pub mod stddef_h {
+    #[c2rust::src_loc = "46:1"]
+    pub type size_t = libc::c_ulong;
+    #[c2rust::src_loc = "89:11"]
+    pub const NULL: libc::c_int = 0 as libc::c_int;
 }
-pub type size_t = libc::c_ulong;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tl_interp_s {
-    pub ns: tl_ns,
-    pub top_env: *mut tl_object,
-    pub env: *mut tl_object,
-    pub true_: *mut tl_object,
-    pub false_: *mut tl_object,
-    pub error: *mut tl_object,
-    pub prefixes: *mut tl_object,
-    pub top_alloc: *mut tl_object,
-    pub current: *mut tl_object,
-    pub conts: *mut tl_object,
-    pub values: *mut tl_object,
-    pub rescue: *mut tl_object,
-    pub gc_events: size_t,
-    pub ctr_events: size_t,
-    pub putback: libc::c_int,
-    pub is_putback: libc::c_int,
-    pub read_buffer: *mut libc::c_char,
-    pub read_ptr: size_t,
-    pub read_sz: size_t,
-    pub disp_sep: libc::c_char,
-    pub udata: *mut libc::c_void,
-    pub readf: Option<unsafe extern "C" fn(*mut tl_interp_s) -> libc::c_int>,
-    pub writef: Option<unsafe extern "C" fn(*mut tl_interp_s, libc::c_char) -> ()>,
-    pub reallocf: Option<
-        unsafe extern "C" fn(*mut tl_interp_s, *mut libc::c_void, size_t) -> *mut libc::c_void,
-    >,
-    pub modloadf:
-        Option<unsafe extern "C" fn(*mut tl_interp_s, *const libc::c_char) -> libc::c_int>,
+use crate::tl::tinylisp_h::*;
+
+#[c2rust::header_src = "/usr/include/string.h:1"]
+pub mod string_h {
+    extern "C" {
+        #[c2rust::src_loc = "43:14"]
+        pub fn memcpy(
+            _: *mut libc::c_void,
+            _: *const libc::c_void,
+            _: libc::c_ulong,
+        ) -> *mut libc::c_void;
+        #[c2rust::src_loc = "64:12"]
+        pub fn memcmp(
+            _: *const libc::c_void,
+            _: *const libc::c_void,
+            _: libc::c_ulong,
+        ) -> libc::c_int;
+    }
 }
-pub type tl_object = tl_object_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tl_object_s {
-    pub kind: C2RustUnnamed_5,
-    pub c2rust_unnamed: C2RustUnnamed_0,
-    pub c2rust_unnamed_0: C2RustUnnamed,
-    pub prev_alloc: *mut tl_object_s,
+#[c2rust::header_src = "/usr/include/stdio.h:2"]
+pub mod stdio_h {
+    extern "C" {
+        #[c2rust::src_loc = "378:12"]
+        pub fn snprintf(
+            _: *mut libc::c_char,
+            _: libc::c_ulong,
+            _: *const libc::c_char,
+            _: ...
+        ) -> libc::c_int;
+    }
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub next_alloc: *mut tl_object_s,
-    pub next_alloc_i: size_t,
+#[c2rust::header_src = "/usr/include/stdlib.h:3"]
+pub mod stdlib_h {
+    extern "C" {
+        #[c2rust::src_loc = "555:13"]
+        pub fn free(_: *mut libc::c_void);
+    }
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub ival: libc::c_long,
-    pub nm: *mut tl_name,
-    pub c2rust_unnamed: C2RustUnnamed_4,
-    pub c2rust_unnamed_0: C2RustUnnamed_3,
-    pub c2rust_unnamed_1: C2RustUnnamed_2,
-    pub c2rust_unnamed_2: C2RustUnnamed_1,
+#[c2rust::header_src = "/usr/include/assert.h:4"]
+pub mod assert_h {
+    extern "C" {
+        #[c2rust::src_loc = "69:1"]
+        pub fn __assert_fail(
+            __assertion: *const libc::c_char,
+            __file: *const libc::c_char,
+            __line: libc::c_uint,
+            __function: *const libc::c_char,
+        ) -> !;
+    }
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_1 {
-    pub ret_env: *mut tl_object_s,
-    pub ret_conts: *mut tl_object_s,
-    pub ret_values: *mut tl_object_s,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub args: *mut tl_object_s,
-    pub body: *mut tl_object_s,
-    pub env: *mut tl_object_s,
-    pub envn: *mut tl_object_s,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_3 {
-    pub cfunc:
-        Option<unsafe extern "C" fn(*mut tl_interp, *mut tl_object_s, *mut tl_object_s) -> ()>,
-    pub state: *mut tl_object_s,
-    pub name: *mut libc::c_char,
-}
-pub type tl_interp = tl_interp_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_4 {
-    pub first: *mut tl_object_s,
-    pub next: *mut tl_object_s,
-}
-pub type tl_name = tl_name_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tl_name_s {
-    pub here: tl_buffer,
-    pub num_children: size_t,
-    pub sz_children: size_t,
-    pub children: *mut tl_child,
-    pub chain: *mut tl_name_s,
-}
-pub type tl_child = tl_child_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tl_child_s {
-    pub seg: tl_buffer,
-    pub name: *mut tl_name_s,
-}
-pub type tl_buffer = tl_buffer_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tl_buffer_s {
-    pub data: *mut libc::c_char,
-    pub len: size_t,
-}
-pub type C2RustUnnamed_5 = libc::c_uint;
-pub const TL_CONT: C2RustUnnamed_5 = 8;
-pub const TL_FUNC: C2RustUnnamed_5 = 7;
-pub const TL_MACRO: C2RustUnnamed_5 = 6;
-pub const TL_CFUNC_BYVAL: C2RustUnnamed_5 = 5;
-pub const TL_CFUNC: C2RustUnnamed_5 = 4;
-pub const TL_THEN: C2RustUnnamed_5 = 3;
-pub const TL_PAIR: C2RustUnnamed_5 = 2;
-pub const TL_SYM: C2RustUnnamed_5 = 1;
-pub const TL_INT: C2RustUnnamed_5 = 0;
-pub type tl_ns = tl_ns_s;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tl_ns_s {
-    pub root: *mut tl_name,
-}
-#[derive(Copy, Clone)]
-#[repr(C, align(8))]
-pub struct tl_init_ent_s(pub tl_init_ent_s_Inner);
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tl_init_ent_s_Inner {
-    pub fn_0: Option<unsafe extern "C" fn(*mut tl_interp, *mut tl_object, *mut tl_object) -> ()>,
-    pub name: *const libc::c_char,
-    pub flags: size_t,
-}
-#[allow(dead_code, non_upper_case_globals)]
-const tl_init_ent_s_PADDING: usize =
-    ::std::mem::size_of::<tl_init_ent_s>() - ::std::mem::size_of::<tl_init_ent_s_Inner>();
-pub type tl_init_ent = tl_init_ent_s;
+use self::assert_h::__assert_fail;
+pub use self::stddef_h::{size_t, NULL};
+use self::stdio_h::snprintf;
+use self::stdlib_h::free;
+use self::string_h::{memcmp, memcpy};
 #[no_mangle]
+#[c2rust::src_loc = "10:1"]
 pub unsafe extern "C" fn _unboolify(
     mut in_0: *mut tl_interp,
     mut obj: *mut tl_object,
@@ -228,6 +84,7 @@ pub unsafe extern "C" fn _unboolify(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "37:1"]
 static mut init_tl_cf_error: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -242,10 +99,11 @@ static mut init_tl_cf_error: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "37:1"]
 pub unsafe extern "C" fn tl_cf_error(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if !args.is_null() {
         if !((*in_0).error).is_null() {
@@ -285,6 +143,7 @@ pub unsafe extern "C" fn tl_cf_error(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "46:1"]
 static mut init_tl_cf_macro: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -299,20 +158,21 @@ static mut init_tl_cf_macro: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "46:1"]
 pub unsafe extern "C" fn tl_cf_macro(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut fargs: *mut tl_object = if !args.is_null()
+    let mut fargs = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut envn: *mut tl_object = if !(if !args.is_null()
+    let mut envn = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -353,9 +213,9 @@ pub unsafe extern "C" fn tl_cf_macro(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut body: *mut tl_object = if !(if !args.is_null()
+    let mut body = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -396,7 +256,7 @@ pub unsafe extern "C" fn tl_cf_macro(
         .c2rust_unnamed
         .next
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !(!envn.is_null() && (*envn).kind as libc::c_uint == TL_SYM as libc::c_int as libc::c_uint) {
         if !((*in_0).error).is_null() {
@@ -439,26 +299,27 @@ pub unsafe extern "C" fn tl_cf_macro(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "57:1"]
 pub unsafe extern "C" fn tl_cf_lambda(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut fargs: *mut tl_object = if !args.is_null()
+    let mut fargs = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut body: *mut tl_object = if !args.is_null()
+    let mut body = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.next
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     let ref mut fresh6 = (*in_0).values;
     *fresh6 = tl_new_pair(
@@ -473,6 +334,7 @@ pub unsafe extern "C" fn tl_cf_lambda(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "57:1"]
 static mut init_tl_cf_lambda: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -486,6 +348,7 @@ static mut init_tl_cf_lambda: tl_init_ent = unsafe {
         init
     })
 };
+#[c2rust::src_loc = "63:1"]
 unsafe extern "C" fn _tl_cf_define_k(
     mut in_0: *mut tl_interp,
     mut result: *mut tl_object,
@@ -502,7 +365,7 @@ unsafe extern "C" fn _tl_cf_define_k(
         {
             (*result).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         },
     );
     let ref mut fresh8 = (*in_0).values;
@@ -513,20 +376,21 @@ unsafe extern "C" fn _tl_cf_define_k(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "68:1"]
 pub unsafe extern "C" fn tl_cf_define(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut key: *mut tl_object = if !args.is_null()
+    let mut key = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut val: *mut tl_object = if !(if !args.is_null()
+    let mut val = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -567,7 +431,7 @@ pub unsafe extern "C" fn tl_cf_define(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if tl_list_len(args) < 2 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
@@ -626,6 +490,7 @@ pub unsafe extern "C" fn tl_cf_define(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "68:1"]
 static mut init_tl_cf_define: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -641,6 +506,7 @@ static mut init_tl_cf_define: tl_init_ent = unsafe {
 };
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "78:1"]
 static mut init_tl_cf_display: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -655,19 +521,20 @@ static mut init_tl_cf_display: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "78:1"]
 pub unsafe extern "C" fn tl_cf_display(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut l_arg: *mut tl_object = args;
-    let mut arg: *mut tl_object = if !args.is_null()
+    let mut l_arg = args;
+    let mut arg = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_arg.is_null() {
         tl_print(in_0, arg);
@@ -677,7 +544,7 @@ pub unsafe extern "C" fn tl_cf_display(
         {
             (*l_arg).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         }
         .is_null()
         {
@@ -689,7 +556,7 @@ pub unsafe extern "C" fn tl_cf_display(
         {
             (*l_arg).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         arg = (if !l_arg.is_null()
             && (l_arg.is_null()
@@ -697,7 +564,7 @@ pub unsafe extern "C" fn tl_cf_display(
         {
             (*l_arg).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     tl_printf(in_0, b"\n\0" as *const u8 as *const libc::c_char);
@@ -709,12 +576,13 @@ pub unsafe extern "C" fn tl_cf_display(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "87:1"]
 pub unsafe extern "C" fn tl_cf_display_sep(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut arg: *mut tl_object = 0 as *mut tl_object;
+    let mut arg = 0 as *mut tl_object;
     if args.is_null() {
         let ref mut fresh13 = (*in_0).values;
         *fresh13 = tl_new_pair(
@@ -734,7 +602,7 @@ pub unsafe extern "C" fn tl_cf_display_sep(
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !(!arg.is_null() && (*arg).kind as libc::c_uint == TL_SYM as libc::c_int as libc::c_uint) {
         if !((*in_0).error).is_null() {
@@ -796,6 +664,7 @@ pub unsafe extern "C" fn tl_cf_display_sep(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "87:1"]
 static mut init_tl_cf_display_sep: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -810,20 +679,21 @@ static mut init_tl_cf_display_sep: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "105:1"]
 pub unsafe extern "C" fn tl_cf_prefix(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut prefix: *mut tl_object = if !args.is_null()
+    let mut prefix = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut name: *mut tl_object = if !(if !args.is_null()
+    let mut name = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -864,7 +734,7 @@ pub unsafe extern "C" fn tl_cf_prefix(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     let ref mut fresh19 = (*in_0).prefixes;
     *fresh19 = tl_new_pair(in_0, tl_new_pair(in_0, prefix, name), (*in_0).prefixes);
@@ -877,6 +747,7 @@ pub unsafe extern "C" fn tl_cf_prefix(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "105:1"]
 static mut init_tl_cf_prefix: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -891,10 +762,11 @@ static mut init_tl_cf_prefix: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "112:1"]
 pub unsafe extern "C" fn tl_cf_evalin(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if tl_list_len(args) < 3 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
@@ -911,15 +783,15 @@ pub unsafe extern "C" fn tl_cf_evalin(
         };
         return;
     }
-    let mut env: *mut tl_object = if !args.is_null()
+    let mut env = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut expr: *mut tl_object = if !(if !args.is_null()
+    let mut expr = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -960,9 +832,9 @@ pub unsafe extern "C" fn tl_cf_evalin(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut k: *mut tl_object = if !(if !(if !args.is_null()
+    let mut k = if !(if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -1144,13 +1016,14 @@ pub unsafe extern "C" fn tl_cf_evalin(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     tl_push_apply(in_0, 1 as libc::c_int as libc::c_long, k, (*in_0).env);
     tl_push_eval(in_0, expr, env);
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "112:1"]
 static mut init_tl_cf_evalin: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1165,10 +1038,11 @@ static mut init_tl_cf_evalin: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "125:1"]
 pub unsafe extern "C" fn tl_cf_call_with_current_continuation(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if args.is_null() {
         if !((*in_0).error).is_null() {
@@ -1185,7 +1059,7 @@ pub unsafe extern "C" fn tl_cf_call_with_current_continuation(
         };
         return;
     }
-    let mut cont: *mut tl_object = tl_new_cont(in_0, (*in_0).env, (*in_0).conts, (*in_0).values);
+    let mut cont = tl_new_cont(in_0, (*in_0).env, (*in_0).conts, (*in_0).values);
     tl_push_apply(
         in_0,
         1 as libc::c_int as libc::c_long,
@@ -1195,7 +1069,7 @@ pub unsafe extern "C" fn tl_cf_call_with_current_continuation(
         {
             (*args).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         },
         (*in_0).env,
     );
@@ -1208,6 +1082,7 @@ pub unsafe extern "C" fn tl_cf_call_with_current_continuation(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "125:1"]
 static mut init_tl_cf_call_with_current_continuation: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1222,10 +1097,11 @@ static mut init_tl_cf_call_with_current_continuation: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "132:1"]
 pub unsafe extern "C" fn tl_cf_cons(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if tl_list_len(args) < 2 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
@@ -1311,6 +1187,7 @@ pub unsafe extern "C" fn tl_cf_cons(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "132:1"]
 static mut init_tl_cf_cons: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1325,10 +1202,11 @@ static mut init_tl_cf_cons: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "137:1"]
 pub unsafe extern "C" fn tl_cf_car(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if args.is_null() {
         if !((*in_0).error).is_null() {
@@ -1395,6 +1273,7 @@ pub unsafe extern "C" fn tl_cf_car(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "137:1"]
 static mut init_tl_cf_car: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1410,6 +1289,7 @@ static mut init_tl_cf_car: tl_init_ent = unsafe {
 };
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "142:1"]
 static mut init_tl_cf_cdr: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1424,10 +1304,11 @@ static mut init_tl_cf_cdr: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "142:1"]
 pub unsafe extern "C" fn tl_cf_cdr(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if args.is_null() {
         if !((*in_0).error).is_null() {
@@ -1494,6 +1375,7 @@ pub unsafe extern "C" fn tl_cf_cdr(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "147:1"]
 static mut init_tl_cf_null: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1508,10 +1390,11 @@ static mut init_tl_cf_null: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "147:1"]
 pub unsafe extern "C" fn tl_cf_null(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if args.is_null() {
         if !((*in_0).error).is_null() {
@@ -1552,20 +1435,21 @@ pub unsafe extern "C" fn tl_cf_null(
         (*in_0).values,
     );
 }
+#[c2rust::src_loc = "152:1"]
 unsafe extern "C" fn _tl_cf_if_k(
     mut in_0: *mut tl_interp,
     mut result: *mut tl_object,
     mut branches: *mut tl_object,
 ) {
-    let mut ift: *mut tl_object = if !branches.is_null()
+    let mut ift = if !branches.is_null()
         && (branches.is_null()
             || (*branches).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*branches).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut iff: *mut tl_object = if !(if !branches.is_null()
+    let mut iff = if !(if !branches.is_null()
         && (branches.is_null()
             || (*branches).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -1606,7 +1490,7 @@ unsafe extern "C" fn _tl_cf_if_k(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if _unboolify(
         in_0,
@@ -1616,7 +1500,7 @@ unsafe extern "C" fn _tl_cf_if_k(
         {
             (*result).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         },
     ) != 0
     {
@@ -1626,18 +1510,19 @@ unsafe extern "C" fn _tl_cf_if_k(
     };
 }
 #[no_mangle]
+#[c2rust::src_loc = "161:1"]
 pub unsafe extern "C" fn tl_cf_if(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut cond: *mut tl_object = if !args.is_null()
+    let mut cond = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if tl_list_len(args) < 3 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
@@ -1668,6 +1553,7 @@ pub unsafe extern "C" fn tl_cf_if(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "161:1"]
 static mut init_tl_cf_if: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1681,6 +1567,7 @@ static mut init_tl_cf_if: tl_init_ent = unsafe {
         init
     })
 };
+#[c2rust::src_loc = "167:1"]
 unsafe extern "C" fn _tl_cf_set_k(
     mut in_0: *mut tl_interp,
     mut result: *mut tl_object,
@@ -1697,7 +1584,7 @@ unsafe extern "C" fn _tl_cf_set_k(
         {
             (*result).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         },
     );
     let ref mut fresh34 = (*in_0).values;
@@ -1708,20 +1595,21 @@ unsafe extern "C" fn _tl_cf_set_k(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "172:1"]
 pub unsafe extern "C" fn tl_cf_set(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut key: *mut tl_object = if !args.is_null()
+    let mut key = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut val: *mut tl_object = if !(if !args.is_null()
+    let mut val = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -1762,7 +1650,7 @@ pub unsafe extern "C" fn tl_cf_set(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if tl_list_len(args) < 2 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
@@ -1815,6 +1703,7 @@ pub unsafe extern "C" fn tl_cf_set(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "172:1"]
 static mut init_tl_cf_set: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1829,18 +1718,19 @@ static mut init_tl_cf_set: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "179:1"]
 pub unsafe extern "C" fn tl_cf_env(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut f: *mut tl_object = if !args.is_null()
+    let mut f = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if f.is_null() {
         let ref mut fresh38 = (*in_0).values;
@@ -1895,6 +1785,7 @@ pub unsafe extern "C" fn tl_cf_env(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "179:1"]
 static mut init_tl_cf_env: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1910,6 +1801,7 @@ static mut init_tl_cf_env: tl_init_ent = unsafe {
 };
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "191:1"]
 static mut init_tl_cf_setenv: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -1924,20 +1816,21 @@ static mut init_tl_cf_setenv: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "191:1"]
 pub unsafe extern "C" fn tl_cf_setenv(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut first: *mut tl_object = if !args.is_null()
+    let mut first = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut next: *mut tl_object = if !(if !args.is_null()
+    let mut next = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -1978,7 +1871,7 @@ pub unsafe extern "C" fn tl_cf_setenv(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if next.is_null() {
         let ref mut fresh42 = (*in_0).env;
@@ -2034,10 +1927,11 @@ pub unsafe extern "C" fn tl_cf_setenv(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "205:1"]
 pub unsafe extern "C" fn tl_cf_topenv(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     let ref mut fresh48 = (*in_0).values;
     *fresh48 = tl_new_pair(
@@ -2048,6 +1942,7 @@ pub unsafe extern "C" fn tl_cf_topenv(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "205:1"]
 static mut init_tl_cf_topenv: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -2063,6 +1958,7 @@ static mut init_tl_cf_topenv: tl_init_ent = unsafe {
 };
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "209:1"]
 static mut init_tl_cf_concat: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -2077,33 +1973,34 @@ static mut init_tl_cf_concat: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "209:1"]
 pub unsafe extern "C" fn tl_cf_concat(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut buffer: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut end: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut src: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut sz: size_t = 0 as libc::c_int as size_t;
+    let mut buffer = 0 as *mut libc::c_char;
+    let mut end = 0 as *mut libc::c_char;
+    let mut src = 0 as *mut libc::c_char;
+    let mut sz = 0 as libc::c_int as size_t;
     let mut rsz: size_t = 0;
-    let mut ret: *mut tl_object = 0 as *mut tl_object;
-    let mut l_val: *mut tl_object = args;
-    let mut val: *mut tl_object = if !args.is_null()
+    let mut ret = 0 as *mut tl_object;
+    let mut l_val = args;
+    let mut val = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_val.is_null() {
         if !val.is_null() && (*val).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint {
-            let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
+            let mut buf = 0 as *mut libc::c_char;
             let mut sz_0: libc::c_int = 0;
-            let mut sm: *mut tl_object = 0 as *mut tl_object;
+            let mut sm = 0 as *mut tl_object;
             sz_0 = snprintf(
-                0 as *mut libc::c_char,
+                NULL as *mut libc::c_char,
                 0 as libc::c_int as libc::c_ulong,
                 b"%ld\0" as *const u8 as *const libc::c_char,
                 (*val).c2rust_unnamed.ival,
@@ -2186,7 +2083,7 @@ pub unsafe extern "C" fn tl_cf_concat(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         val = (if !l_val.is_null()
             && (l_val.is_null()
@@ -2194,7 +2091,7 @@ pub unsafe extern "C" fn tl_cf_concat(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     rsz = sz;
@@ -2211,14 +2108,14 @@ pub unsafe extern "C" fn tl_cf_concat(
         };
         return;
     }
-    let mut l_val_0: *mut tl_object = args;
-    let mut val_0: *mut tl_object = if !args.is_null()
+    let mut l_val_0 = args;
+    let mut val_0 = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_val_0.is_null() {
         src = (*(*val_0).c2rust_unnamed.nm).here.data;
@@ -2237,7 +2134,7 @@ pub unsafe extern "C" fn tl_cf_concat(
         {
             (*l_val_0).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         val_0 = (if !l_val_0.is_null()
             && (l_val_0.is_null()
@@ -2245,7 +2142,7 @@ pub unsafe extern "C" fn tl_cf_concat(
         {
             (*l_val_0).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     ret = tl_new_sym_data(in_0, buffer, rsz);
@@ -2255,6 +2152,7 @@ pub unsafe extern "C" fn tl_cf_concat(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "255:1"]
 static mut init_tl_cf_length: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -2269,10 +2167,11 @@ static mut init_tl_cf_length: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "255:1"]
 pub unsafe extern "C" fn tl_cf_length(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if args.is_null() {
         if !((*in_0).error).is_null() {
@@ -2378,6 +2277,7 @@ pub unsafe extern "C" fn tl_cf_length(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "261:1"]
 static mut init_tl_cf_ord: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -2392,10 +2292,11 @@ static mut init_tl_cf_ord: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "261:1"]
 pub unsafe extern "C" fn tl_cf_ord(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if tl_list_len(args) < 2 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
@@ -2717,7 +2618,7 @@ pub unsafe extern "C" fn tl_cf_ord(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     }))
     .c2rust_unnamed
     .ival as libc::c_ulong
@@ -2727,7 +2628,7 @@ pub unsafe extern "C" fn tl_cf_ord(
         {
             (*args).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         }))
         .c2rust_unnamed
         .nm)
@@ -2964,6 +2865,7 @@ pub unsafe extern "C" fn tl_cf_ord(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "272:1"]
 static mut init_tl_cf_chr: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -2978,10 +2880,11 @@ static mut init_tl_cf_chr: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "272:1"]
 pub unsafe extern "C" fn tl_cf_chr(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     let mut s: [libc::c_char; 2] = [0, 0];
     if args.is_null() {
@@ -3061,7 +2964,7 @@ pub unsafe extern "C" fn tl_cf_chr(
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     })
     .c2rust_unnamed
     .ival as libc::c_char;
@@ -3074,6 +2977,7 @@ pub unsafe extern "C" fn tl_cf_chr(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "280:1"]
 static mut init_tl_cf_substr: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -3088,16 +2992,17 @@ static mut init_tl_cf_substr: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "280:1"]
 pub unsafe extern "C" fn tl_cf_substr(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut sym: *mut tl_object = 0 as *mut tl_object;
-    let mut start: *mut tl_object = 0 as *mut tl_object;
+    let mut sym = 0 as *mut tl_object;
+    let mut start = 0 as *mut tl_object;
     let mut sidx: libc::c_long = 0;
     let mut eidx: libc::c_long = 0;
-    let mut buf: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut buf = 0 as *mut libc::c_char;
     if tl_list_len(args) < 2 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
             tl_new_sym(
@@ -3119,7 +3024,7 @@ pub unsafe extern "C" fn tl_cf_substr(
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !(!sym.is_null() && (*sym).kind as libc::c_uint == TL_SYM as libc::c_int as libc::c_uint) {
         if !((*in_0).error).is_null() {
@@ -3191,7 +3096,7 @@ pub unsafe extern "C" fn tl_cf_substr(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !(!start.is_null() && (*start).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint)
     {
@@ -3265,7 +3170,7 @@ pub unsafe extern "C" fn tl_cf_substr(
         .c2rust_unnamed
         .next
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     }
     .is_null()
     {
@@ -3455,7 +3360,7 @@ pub unsafe extern "C" fn tl_cf_substr(
             .c2rust_unnamed
             .first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         };
         if !(!start.is_null()
             && (*start).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint)
@@ -3531,6 +3436,7 @@ pub unsafe extern "C" fn tl_cf_substr(
         (*in_0).values,
     );
 }
+#[c2rust::src_loc = "326:1"]
 unsafe extern "C" fn _tl_readc_k(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
@@ -3556,6 +3462,7 @@ unsafe extern "C" fn _tl_readc_k(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "331:1"]
 static mut init_tl_cf_readc: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -3570,10 +3477,11 @@ static mut init_tl_cf_readc: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "331:1"]
 pub unsafe extern "C" fn tl_cf_readc(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     _tl_getc_and_then(
         in_0,
@@ -3587,6 +3495,7 @@ pub unsafe extern "C" fn tl_cf_readc(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "335:1"]
 static mut init_tl_cf_putbackc: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -3601,10 +3510,11 @@ static mut init_tl_cf_putbackc: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "335:1"]
 pub unsafe extern "C" fn tl_cf_putbackc(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if args.is_null() {
         if !((*in_0).error).is_null() {
@@ -3703,6 +3613,7 @@ pub unsafe extern "C" fn tl_cf_putbackc(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "342:1"]
 static mut init_tl_cf_writec: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -3717,10 +3628,11 @@ static mut init_tl_cf_writec: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "342:1"]
 pub unsafe extern "C" fn tl_cf_writec(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     if args.is_null() {
         if !((*in_0).error).is_null() {
@@ -3821,6 +3733,7 @@ pub unsafe extern "C" fn tl_cf_writec(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "349:1"]
 static mut init_tl_cf_add: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -3835,20 +3748,21 @@ static mut init_tl_cf_add: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "349:1"]
 pub unsafe extern "C" fn tl_cf_add(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut res: libc::c_long = 0 as libc::c_int as libc::c_long;
-    let mut l_val: *mut tl_object = args;
-    let mut val: *mut tl_object = if !args.is_null()
+    let mut res = 0 as libc::c_int as libc::c_long;
+    let mut l_val = args;
+    let mut val = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_val.is_null() {
         if !(!val.is_null() && (*val).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint)
@@ -3882,7 +3796,7 @@ pub unsafe extern "C" fn tl_cf_add(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         val = (if !l_val.is_null()
             && (l_val.is_null()
@@ -3890,7 +3804,7 @@ pub unsafe extern "C" fn tl_cf_add(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     let ref mut fresh90 = (*in_0).values;
@@ -3901,21 +3815,22 @@ pub unsafe extern "C" fn tl_cf_add(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "358:1"]
 pub unsafe extern "C" fn tl_cf_sub(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut phase: libc::c_long = 0 as libc::c_int as libc::c_long;
-    let mut res: libc::c_long = 0 as libc::c_int as libc::c_long;
-    let mut l_val: *mut tl_object = args;
-    let mut val: *mut tl_object = if !args.is_null()
+    let mut phase = 0 as libc::c_int as libc::c_long;
+    let mut res = 0 as libc::c_int as libc::c_long;
+    let mut l_val = args;
+    let mut val = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_val.is_null() {
         if !(!val.is_null() && (*val).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint)
@@ -3954,7 +3869,7 @@ pub unsafe extern "C" fn tl_cf_sub(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         val = (if !l_val.is_null()
             && (l_val.is_null()
@@ -3962,7 +3877,7 @@ pub unsafe extern "C" fn tl_cf_sub(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     let ref mut fresh93 = (*in_0).values;
@@ -3974,6 +3889,7 @@ pub unsafe extern "C" fn tl_cf_sub(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "358:1"]
 static mut init_tl_cf_sub: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -3988,20 +3904,21 @@ static mut init_tl_cf_sub: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "373:1"]
 pub unsafe extern "C" fn tl_cf_mul(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut res: libc::c_long = 1 as libc::c_int as libc::c_long;
-    let mut l_val: *mut tl_object = args;
-    let mut val: *mut tl_object = if !args.is_null()
+    let mut res = 1 as libc::c_int as libc::c_long;
+    let mut l_val = args;
+    let mut val = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_val.is_null() {
         if !(!val.is_null() && (*val).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint)
@@ -4035,7 +3952,7 @@ pub unsafe extern "C" fn tl_cf_mul(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         val = (if !l_val.is_null()
             && (l_val.is_null()
@@ -4043,7 +3960,7 @@ pub unsafe extern "C" fn tl_cf_mul(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     let ref mut fresh96 = (*in_0).values;
@@ -4055,6 +3972,7 @@ pub unsafe extern "C" fn tl_cf_mul(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "373:1"]
 static mut init_tl_cf_mul: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4070,6 +3988,7 @@ static mut init_tl_cf_mul: tl_init_ent = unsafe {
 };
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "382:1"]
 static mut init_tl_cf_div: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4084,21 +4003,22 @@ static mut init_tl_cf_div: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "382:1"]
 pub unsafe extern "C" fn tl_cf_div(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut phase: libc::c_long = 0 as libc::c_int as libc::c_long;
-    let mut res: libc::c_long = 1 as libc::c_int as libc::c_long;
-    let mut l_val: *mut tl_object = args;
-    let mut val: *mut tl_object = if !args.is_null()
+    let mut phase = 0 as libc::c_int as libc::c_long;
+    let mut res = 1 as libc::c_int as libc::c_long;
+    let mut l_val = args;
+    let mut val = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_val.is_null() {
         if !(!val.is_null() && (*val).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint)
@@ -4137,7 +4057,7 @@ pub unsafe extern "C" fn tl_cf_div(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         val = (if !l_val.is_null()
             && (l_val.is_null()
@@ -4145,7 +4065,7 @@ pub unsafe extern "C" fn tl_cf_div(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     let ref mut fresh99 = (*in_0).values;
@@ -4156,21 +4076,22 @@ pub unsafe extern "C" fn tl_cf_div(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "397:1"]
 pub unsafe extern "C" fn tl_cf_mod(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut phase: libc::c_long = 0 as libc::c_int as libc::c_long;
-    let mut res: libc::c_long = 1 as libc::c_int as libc::c_long;
-    let mut l_val: *mut tl_object = args;
-    let mut val: *mut tl_object = if !args.is_null()
+    let mut phase = 0 as libc::c_int as libc::c_long;
+    let mut res = 1 as libc::c_int as libc::c_long;
+    let mut l_val = args;
+    let mut val = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     while !l_val.is_null() {
         if !(!val.is_null() && (*val).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint)
@@ -4209,7 +4130,7 @@ pub unsafe extern "C" fn tl_cf_mod(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         val = (if !l_val.is_null()
             && (l_val.is_null()
@@ -4217,7 +4138,7 @@ pub unsafe extern "C" fn tl_cf_mod(
         {
             (*l_val).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
     }
     let ref mut fresh102 = (*in_0).values;
@@ -4229,6 +4150,7 @@ pub unsafe extern "C" fn tl_cf_mod(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "397:1"]
 static mut init_tl_cf_mod: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4243,20 +4165,21 @@ static mut init_tl_cf_mod: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "412:1"]
 pub unsafe extern "C" fn tl_cf_eq(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut a: *mut tl_object = if !args.is_null()
+    let mut a = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut b: *mut tl_object = if !(if !args.is_null()
+    let mut b = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -4297,7 +4220,7 @@ pub unsafe extern "C" fn tl_cf_eq(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !a.is_null()
         && (*a).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint
@@ -4361,6 +4284,7 @@ pub unsafe extern "C" fn tl_cf_eq(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "412:1"]
 static mut init_tl_cf_eq: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4375,20 +4299,21 @@ static mut init_tl_cf_eq: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "423:1"]
 pub unsafe extern "C" fn tl_cf_less(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut a: *mut tl_object = if !args.is_null()
+    let mut a = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut b: *mut tl_object = if !(if !args.is_null()
+    let mut b = if !(if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
@@ -4429,7 +4354,7 @@ pub unsafe extern "C" fn tl_cf_less(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !a.is_null()
         && (*a).kind as libc::c_uint == TL_INT as libc::c_int as libc::c_uint
@@ -4520,6 +4445,7 @@ pub unsafe extern "C" fn tl_cf_less(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "423:1"]
 static mut init_tl_cf_less: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4534,12 +4460,13 @@ static mut init_tl_cf_less: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "435:1"]
 pub unsafe extern "C" fn tl_cf_nand(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut a: libc::c_int = _unboolify(
+    let mut a = _unboolify(
         in_0,
         if !args.is_null()
             && (args.is_null()
@@ -4547,10 +4474,10 @@ pub unsafe extern "C" fn tl_cf_nand(
         {
             (*args).c2rust_unnamed.c2rust_unnamed.first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         },
     );
-    let mut b: libc::c_int = _unboolify(
+    let mut b = _unboolify(
         in_0,
         if !(if !args.is_null()
             && (args.is_null()
@@ -4593,7 +4520,7 @@ pub unsafe extern "C" fn tl_cf_nand(
             .c2rust_unnamed
             .first
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         },
     );
     let ref mut fresh110 = (*in_0).values;
@@ -4613,6 +4540,7 @@ pub unsafe extern "C" fn tl_cf_nand(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "435:1"]
 static mut init_tl_cf_nand: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4628,6 +4556,7 @@ static mut init_tl_cf_nand: tl_init_ent = unsafe {
 };
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "440:1"]
 static mut init_tl_cf_type: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4642,18 +4571,19 @@ static mut init_tl_cf_type: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "440:1"]
 pub unsafe extern "C" fn tl_cf_type(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut obj: *mut tl_object = if !args.is_null()
+    let mut obj = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !((*in_0).error).is_null() {
         let ref mut fresh111 = (*in_0).values;
@@ -4783,6 +4713,7 @@ pub unsafe extern "C" fn tl_cf_type(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "457:1"]
 static mut init_tl_cf_apply: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4797,12 +4728,13 @@ static mut init_tl_cf_apply: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "457:1"]
 pub unsafe extern "C" fn tl_cf_apply(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut cur: *mut tl_object = 0 as *mut tl_object;
+    let mut cur = 0 as *mut tl_object;
     let mut len: size_t = 0;
     if tl_list_len(args) < 2 as libc::c_int as libc::c_ulong {
         if !((*in_0).error).is_null() {
@@ -4860,7 +4792,7 @@ pub unsafe extern "C" fn tl_cf_apply(
         .c2rust_unnamed
         .first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     len = 0 as libc::c_int as size_t;
     while !cur.is_null() {
@@ -4887,7 +4819,7 @@ pub unsafe extern "C" fn tl_cf_apply(
         {
             (*cur).c2rust_unnamed.c2rust_unnamed.next
         } else {
-            0 as *mut tl_object_s
+            NULL as *mut tl_object_s
         });
         len = len.wrapping_add(1);
     }
@@ -4910,13 +4842,14 @@ pub unsafe extern "C" fn tl_cf_apply(
     );
     tl_push_apply(
         in_0,
-        -(2 as libc::c_int) as libc::c_long,
+        TL_APPLY_INDIRECT as libc::c_long,
         tl_new_int(in_0, len as libc::c_long),
         (*in_0).env,
     );
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "470:1"]
 static mut init_tl_cf_gc: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4931,10 +4864,11 @@ static mut init_tl_cf_gc: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "470:1"]
 pub unsafe extern "C" fn tl_cf_gc(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     tl_gc(in_0);
     let ref mut fresh124 = (*in_0).values;
@@ -4945,15 +4879,17 @@ pub unsafe extern "C" fn tl_cf_gc(
     );
 }
 #[no_mangle]
+#[c2rust::src_loc = "475:1"]
 pub unsafe extern "C" fn tl_cf_read(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
     tl_read(in_0);
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "475:1"]
 static mut init_tl_cf_read: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -4968,21 +4904,22 @@ static mut init_tl_cf_read: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "479:1"]
 pub unsafe extern "C" fn tl_cf_load_mod(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut name: *mut tl_object = if !args.is_null()
+    let mut name = if !args.is_null()
         && (args.is_null()
             || (*args).kind as libc::c_uint == TL_PAIR as libc::c_int as libc::c_uint)
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
-    let mut name_cstr: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut ret: *mut tl_object = 0 as *mut tl_object;
+    let mut name_cstr = 0 as *mut libc::c_char;
+    let mut ret = 0 as *mut tl_object;
     if !(!name.is_null() && (*name).kind as libc::c_uint == TL_SYM as libc::c_int as libc::c_uint) {
         let ref mut fresh125 = (*in_0).values;
         *fresh125 = tl_new_pair(
@@ -5027,6 +4964,7 @@ pub unsafe extern "C" fn tl_cf_load_mod(
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "479:1"]
 static mut init_tl_cf_load_mod: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -5041,13 +4979,14 @@ static mut init_tl_cf_load_mod: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "500:1"]
 pub unsafe extern "C" fn tl_cf_rescue(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut func: *mut tl_object = 0 as *mut tl_object;
-    let mut cont: *mut tl_object = 0 as *mut tl_object;
+    let mut func = 0 as *mut tl_object;
+    let mut cont = 0 as *mut tl_object;
     if args.is_null() {
         if !((*in_0).error).is_null() {
             tl_new_sym(
@@ -5069,7 +5008,7 @@ pub unsafe extern "C" fn tl_cf_rescue(
     {
         (*args).c2rust_unnamed.c2rust_unnamed.first
     } else {
-        0 as *mut tl_object_s
+        NULL as *mut tl_object_s
     };
     if !(!func.is_null() && (*func).kind as libc::c_uint == TL_CFUNC as libc::c_int as libc::c_uint
         || !func.is_null()
@@ -5116,14 +5055,15 @@ pub unsafe extern "C" fn tl_cf_rescue(
     *fresh130 = tl_new_pair(in_0, cont, (*in_0).rescue);
     tl_push_apply(
         in_0,
-        -(5 as libc::c_int) as libc::c_long,
-        0 as *mut tl_object,
-        0 as *mut tl_object,
+        TL_APPLY_DROP_RESCUE as libc::c_long,
+        TL_EMPTY_LIST as *mut tl_object,
+        TL_EMPTY_LIST as *mut tl_object,
     );
     tl_push_apply(in_0, 0 as libc::c_int as libc::c_long, func, (*in_0).env);
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "500:1"]
 static mut init_tl_cf_rescue: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
@@ -5138,23 +5078,24 @@ static mut init_tl_cf_rescue: tl_init_ent = unsafe {
     })
 };
 #[no_mangle]
+#[c2rust::src_loc = "513:1"]
 pub unsafe extern "C" fn tl_cf_all_objects(
     mut in_0: *mut tl_interp,
     mut args: *mut tl_object,
-    _: *mut tl_object,
+    mut _unused: *mut tl_object,
 ) {
-    let mut cur: *mut tl_object = (*in_0).top_alloc;
-    let mut res: *mut tl_object = 0 as *mut tl_object;
+    let mut cur = (*in_0).top_alloc;
+    let mut res = TL_EMPTY_LIST as *mut tl_object;
     while !cur.is_null() {
         res = tl_new_pair(in_0, cur, res);
-        cur = ((*cur).c2rust_unnamed_0.next_alloc_i & !(0x3 as libc::c_int) as libc::c_ulong)
-            as *mut tl_object;
+        cur = ((*cur).c2rust_unnamed_0.next_alloc_i & !TL_FMASK as libc::c_ulong) as *mut tl_object;
     }
     let ref mut fresh131 = (*in_0).values;
     *fresh131 = tl_new_pair(in_0, tl_new_pair(in_0, res, (*in_0).false_), (*in_0).values);
 }
 #[link_section = "tl_init_ents"]
 #[used]
+#[c2rust::src_loc = "513:1"]
 static mut init_tl_cf_all_objects: tl_init_ent = unsafe {
     tl_init_ent_s({
         let mut init = tl_init_ent_s_Inner {
