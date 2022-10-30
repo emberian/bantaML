@@ -1,4 +1,4 @@
-use bantamlisp::CONFIG;
+
 
 fn main() {
     bantamlisp::main()

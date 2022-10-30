@@ -1,5 +1,5 @@
 #![allow(missing_docs)]
-use ::libc;
+
 #[c2rust::header_src = "internal:0"]
 pub mod internal {
     #[c2rust::src_loc = "0:0"]
@@ -624,7 +624,7 @@ pub mod print_c {
     use super::stddef_h::{size_t, NULL};
     use super::stdio_h::snprintf;
     use super::tinylisp_h::{
-        tl_buffer, tl_interp, Object, ObjectTag, TL_CFUNC, TL_CFUNC_BYVAL,
+        tl_buffer, tl_interp, Object, TL_CFUNC, TL_CFUNC_BYVAL,
         TL_MACRO, TL_PAIR,
     };
 }
@@ -6041,7 +6041,7 @@ pub mod builtin_c {
     use super::stdlib_h::free;
     use super::string_h::{memcmp, memcpy};
     use super::tinylisp_h::{
-        tl_init_ent, tl_interp, Object, ObjectTag, TL_APPLY_DROP_RESCUE,
+        tl_init_ent, tl_interp, Object, TL_APPLY_DROP_RESCUE,
         TL_APPLY_INDIRECT, TL_CFUNC, TL_CFUNC_BYVAL, TL_CONT, TL_EMPTY_LIST, TL_FMASK, TL_FUNC,
         TL_INT, TL_MACRO, TL_PAIR, TL_SYM, TL_THEN,
     };
@@ -6279,7 +6279,7 @@ pub mod debug_c {
     use super::stddef_h::{size_t, NULL_0};
     use super::stdio_h::{fprintf, fputc, fwrite, stderr};
     use super::tinylisp_h::{
-        tl_init_ent, tl_interp, Object, ObjectTag, TL_CFUNC, TL_CFUNC_BYVAL,
+        tl_init_ent, tl_interp, Object, TL_CFUNC, TL_CFUNC_BYVAL,
         TL_MACRO, TL_PAIR,
     };
 }
@@ -6562,7 +6562,7 @@ pub mod env_c {
     use super::object_c::tl_new_pair;
     use super::stddef_h::NULL_0;
     use super::tinylisp_h::{
-        tl_interp, Object, ObjectTag, TL_EMPTY_LIST, TL_PAIR, TL_SYM,
+        tl_interp, Object, TL_EMPTY_LIST, TL_PAIR, TL_SYM,
     };
 }
 #[c2rust::header_src = "/home/ember/src/tinylisp/eval.c:4"]
@@ -8733,7 +8733,7 @@ pub mod eval_c {
     };
     use super::stddef_h::{size_t, NULL_0};
     use super::tinylisp_h::{
-        tl_interp, Object, ObjectTag, TL_APPLY_DROP, TL_APPLY_DROP_EVAL,
+        tl_interp, Object, TL_APPLY_DROP, TL_APPLY_DROP_EVAL,
         TL_APPLY_DROP_RESCUE, TL_APPLY_GETCHAR, TL_APPLY_INDIRECT, TL_APPLY_PUSH_EVAL, TL_CFUNC,
         TL_CFUNC_BYVAL, TL_CONT, TL_EMPTY_LIST, TL_FUNC, TL_INT, TL_MACRO, TL_PAIR,
         TL_RESULT_AGAIN, TL_RESULT_DONE, TL_RESULT_GETCHAR, TL_SYM, TL_THEN,
@@ -8884,7 +8884,7 @@ pub mod interp_c {
     use super::stdio_h::{getchar, putchar};
     use super::stdlib_h::{free, realloc};
     use super::tinylisp_h::{
-        tl_init_ent, tl_interp, Interp, tl_ns, TL_DEFAULT_GC_EVENTS, TL_EMPTY_LIST,
+        tl_init_ent, tl_interp, TL_DEFAULT_GC_EVENTS, TL_EMPTY_LIST,
     };
     extern "C" {
         #[c2rust::src_loc = "3:20"]
@@ -9585,8 +9585,7 @@ pub mod main_c {
     use super::stdio_h::{fflush, fprintf, stderr, stdout};
     use super::stdlib_h::exit;
     use super::tinylisp_h::{
-        tl_init_ent, tl_interp, Interp, tl_name, tl_ns, Object,
-        ObjectTag, TL_CONT, TL_EMPTY_LIST, TL_FMASK, TL_F_MARK, TL_INT, TL_PAIR, TL_THEN,
+        tl_init_ent, tl_interp, tl_name, tl_ns, Object, TL_CONT, TL_EMPTY_LIST, TL_FMASK, TL_F_MARK, TL_INT, TL_PAIR, TL_THEN,
     };
     use super::unistd_h::{isatty, STDIN_FILENO};
 }
@@ -10222,7 +10221,7 @@ pub mod ns_c {
     use super::string_h::{memcmp, memcpy, memmove};
     use super::tinylisp_h::{
         tl_buffer, tl_child, tl_init_ent, tl_interp, tl_name, tl_name_s, tl_ns,
-        Object, ObjectTag, TL_EMPTY_LIST, TL_PAIR,
+        Object, TL_EMPTY_LIST, TL_PAIR,
     };
 }
 #[c2rust::header_src = "/home/ember/src/tinylisp/object.c:8"]
@@ -10738,7 +10737,7 @@ pub mod object_c {
     use super::stddef_h::{size_t, NULL};
     use super::string_h::{memset, strcpy, strlen};
     use super::tinylisp_h::{
-        tl_buffer, tl_interp, tl_name, tl_ns, Object, ObjectTag, TL_CFUNC,
+        tl_interp, tl_name, Object, ObjectTag, TL_CFUNC,
         TL_CFUNC_BYVAL, TL_CONT, TL_EMPTY_LIST, TL_FMASK, TL_FUNC, TL_F_MARK, TL_F_PERMANENT,
         TL_INT, TL_MACRO, TL_PAIR, TL_SYM, TL_THEN,
     };
@@ -12003,10 +12002,10 @@ pub mod read_c {
     use super::stddef_h::{size_t, NULL};
     use super::stdio_h::EOF;
     use super::tinylisp_h::{
-        tl_interp, Object, ObjectTag, TL_INT, TL_PAIR, TL_SYM,
+        tl_interp, Object, TL_INT, TL_PAIR, TL_SYM,
     };
 }
-use self::assert_h::__assert_fail;
+
 pub use self::bits_dlfcn_h::{RTLD_GLOBAL, RTLD_NOW};
 pub use self::builtin_c::{
     _tl_cf_define_k, _tl_cf_if_k, _tl_cf_set_k, _tl_readc_k, _unboolify, init_tl_cf_add,
@@ -12033,7 +12032,7 @@ pub use self::ctype_h::{
 pub use self::debug_c::{
     _indent, _tl_cf_debug_print_k, init_tl_cf_debug_print, tl_cf_debug_print, tl_dbg_print,
 };
-use self::dlfcn_h::{dlerror, dlopen, dlsym};
+
 pub use self::env_c::{tl_env_get_kv, tl_env_set_global, tl_env_set_local, tl_frm_set};
 pub use self::eval_c::{
     _tl_apply_next_body_callable_k, _tl_eval_all_args, _tl_eval_all_args_k, _tl_eval_and_then,
@@ -12045,9 +12044,7 @@ pub use self::interp_c::{
     tl_interp_cleanup, tl_interp_init, tl_interp_init_alloc,
 };
 use self::main_c::{
-    _global_in, _main_k, _main_read_k, _print_cont, _print_cont_stack, init_tl_cf_exit,
-    init_tl_cf_quiet, main_0, my_modloadf, print_cont_stack, quiet, running, tl_cf_exit,
-    tl_cf_quiet, QUIET_NO_TRUE, QUIET_NO_VALUE, QUIET_OFF,
+    main_0,
 };
 pub use self::ns_c::{
     _tl_add_symbol, init_tl_cf_all_symbols, init_tl_cf_print_ns, tl_buf_slice, tl_cf_all_symbols,
@@ -12073,8 +12070,8 @@ pub use self::stddef_h::{size_t, NULL, NULL_0};
 pub use self::stdio_h::{
     fflush, fprintf, fputc, fwrite, getchar, putchar, snprintf, stderr, stdout, EOF,
 };
-use self::stdlib_h::{exit, free, realloc};
-use self::string_h::{memcmp, memcpy, memmove, memset, strcpy, strlen};
+
+
 pub use self::struct_FILE_h::{_IO_codecvt, _IO_lock_t, _IO_marker, _IO_wide_data, _IO_FILE};
 pub use self::tinylisp_h::{
     tl_buffer, tl_buffer_s, tl_child, tl_child_s, tl_init_ent, tl_init_ent_s, tl_init_ent_s_Inner,
