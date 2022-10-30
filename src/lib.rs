@@ -79,10 +79,10 @@ mod config;
 
 pub use config::CONFIG;
 
-pub mod tl;
+pub mod tinylisp;
 
 pub fn main() {
-    tl::main::main();
+    tinylisp::main();
 }
 
 #[cfg(test)]
