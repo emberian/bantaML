@@ -1,18 +1,3 @@
-use ::libc;
-#[c2rust::header_src = "internal:0"]
-pub mod internal {
-    #[c2rust::src_loc = "0:0"]
-    pub type __builtin_va_list = [__va_list_tag; 1];
-    #[derive(Copy, Clone)]
-    #[repr(C)]
-    #[c2rust::src_loc = "0:0"]
-    pub struct __va_list_tag {
-        pub gp_offset: libc::c_uint,
-        pub fp_offset: libc::c_uint,
-        pub overflow_arg_area: *mut libc::c_void,
-        pub reg_save_area: *mut libc::c_void,
-    }
-}
 
 macro_rules! tl_first {
     ($e:expr) => ({ let obj = $e; if !obj.is_null() { (*obj).c2rust_unnamed.c2rust_unnamed.next } else { std::ptr::null_mut() }})
@@ -53,11 +38,11 @@ macro_rules! tl_first { ($obj:expr) => { { let obj = $obj; (if (!obj.is_null() &
 macro_rules! tl_next { ($obj:expr) => {  { let obj = $obj; (if (!obj.is_null() && tl_is_pair!(obj))  { (*obj).data.pair.next } else {std::ptr::null_mut()}) } } }
 
 macro_rules! tl_list_iter { ($it:expr) => {  todo!() } }
-macro_rules! tl_sym_eq { ($b:expr) => {  (tl_is_sym(a) && tl_is_sym(b) && (a)->nm == (b)->nm) } }
+macro_rules! tl_sym_eq { ($b:expr) => {  (tl_is_sym!(a) && tl_is_sym!(b) && (*a).nm == (*b).nm) } }
 macro_rules! tl_sym_less { ($b:expr) => {  (tl_is_sym(a) && tl_is_sym(b) && ((a)->nm->here.len < (b)->nm->here.len && !((b)->nm->here.len < (a)->nm->here.len) || memcmp((a)->nm->here.data, (b)->nm->here.data, (a)->nm->here.len) < 0)) } }
 
 macro_rules! tl_error_set { ($er:expr) => {  ((in)->error ? (er) : ((in)->error = (er))) } }
-macro_rules! tl_error_clear { ($in:expr) => {  ((in)->error = NULL) } }
+macro_rules! tl_error_clear { ($in:expr) => {  ((in)->error = std::ptr::null_mut()) } }
 macro_rules! tl_has_error { ($in:expr) => {  ((in)->error) } }
 
 macro_rules! tl_getc { ($in:expr) => {  ((in)->is_putback ? ((in)->is_putback = 0, (in)->putback) : (in)->readf((in))) } }
@@ -66,7 +51,7 @@ macro_rules! tl_putc { ($in:expr,$c:expr) => { {let in0 = $in; ((*in0).writef.un
 
 macro_rules! tl_alloc_realloc { ($n:expr) => {  ((in)->reallocf((in), (p), (n))) } }
 
-macro_rules! tl_alloc_malloc { ($n:expr) => {  tl_alloc_realloc(in, NULL, n) } }
+macro_rules! tl_alloc_malloc { ($n:expr) => {  tl_alloc_realloc(in, std::ptr::null_mut(), n) } }
 macro_rules! tl_alloc_free { ($ptr:expr) => {  tl_alloc_realloc(in, ptr, 0) } }
 
 macro_rules! tl_values_push { ($v:expr) => {  (in)->values = tl_new_pair((in), tl_new_pair((in), (v), (in)->false_), (in)->values) } }
@@ -77,8 +62,11 @@ macro_rules! tl_rescue_push { ($cont:expr) => {  (in)->rescue = tl_new_pair((in)
 macro_rules! tl_rescue_peek { ($in:expr) => {  tl_first((in)->rescue) } }
 macro_rules! tl_rescue_drop { ($in:expr) => {  (in)->rescue = tl_next((in)->rescue) } }
 macro_rules! tl_cfunc_return { ($v:expr) => {  do { tl_values_push((in), (v)); return; } while(0) } }
-
-pub use self::tinylisp_h::*;
+macro_rules! tl_eval_and_then {
+    ($in:expr,$ex:expr,$st:expr,$cb:expr) => {
+        crate::tinylisp::_tl_eval_and_then($in,$ex,$st,$cb,concat!("tl_eval_and_then", stringify!($cb)))
+    }
+}
 /*
 
 #define tl_mark(obj) ((obj)->next_alloc_i |= TL_F_MARK)
@@ -109,8 +97,8 @@ pub use self::tinylisp_h::*;
 #define tl_is_cont(obj) (!obj.is_null() && (obj)->kind == TL_CONT)
 #define tl_is_callable(obj) (tl_is_cfunc(obj) || tl_is_cfunc_byval(obj) || tl_is_then(obj)|| tl_is_macro(obj) || tl_is_func(obj) || tl_is_cont(obj))
 
-#define tl_first(obj) ((!obj.is_null() && tl_is_pair(obj)) ? (obj)->first : NULL)
-#define tl_next(obj) ((!obj.is_null() && tl_is_pair(obj)) ? (obj)->next : NULL)
+#define tl_first(obj) ((!obj.is_null() && tl_is_pair(obj)) ? (obj)->first : std::ptr::null_mut())
+#define tl_next(obj) ((!obj.is_null() && tl_is_pair(obj)) ? (obj)->next : std::ptr::null_mut())
 
 #define tl_list_iter(obj, it) tl_object *l_##it = obj, *it = tl_first(obj); l_##it; l_##it = tl_next(l_##it), it = tl_first(l_##it)
 TL_EXTERN size_t tl_list_len(tl_object *);
@@ -121,7 +109,7 @@ TL_EXTERN tl_object *tl_list_rvs_improp(tl_interp *, tl_object *);
 #define tl_sym_less(a, b) (tl_is_sym(a) && tl_is_sym(b) && ((a)->nm->here.len < (b)->nm->here.len && !((b)->nm->here.len < (a)->nm->here.len) || memcmp((a)->nm->here.data, (b)->nm->here.data, (a)->nm->here.len) < 0))
 
 #define tl_error_set(in, er) ((in)->error ? (er) : ((in)->error = (er)))
-#define tl_error_clear(in) ((in)->error = NULL)
+#define tl_error_clear(in) ((in)->error = std::ptr::null_mut())
 #define tl_has_error(in) ((in)->error)
 
 #define tl_getc(in) ((in)->is_putback ? ((in)->is_putback = 0, (in)->putback) : (in)->readf((in)))
@@ -130,7 +118,7 @@ TL_EXTERN tl_object *tl_list_rvs_improp(tl_interp *, tl_object *);
 
 #define tl_alloc_realloc(in, p, n) ((in)->reallocf((in), (p), (n)))
 
-#define tl_alloc_malloc(in, n) tl_alloc_realloc(in, NULL, n)
+#define tl_alloc_malloc(in, n) tl_alloc_realloc(in, std::ptr::null_mut(), n)
 #define tl_alloc_free(in, ptr) tl_alloc_realloc(in, ptr, 0)
 
 #define tl_values_push(in, v) (in)->values = tl_new_pair((in), tl_new_pair((in), (v), (in)->false_), (in)->values)
@@ -145,85 +133,10 @@ TL_EXTERN tl_object *tl_list_rvs_improp(tl_interp *, tl_object *);
 #define tl_rescue_drop(in) (in)->rescue = tl_next((in)->rescue)
 #define tl_cfunc_return(in, v) do { tl_values_push((in), (v)); return; } while(0)
 */
-#[c2rust::header_src = "/usr/lib/llvm-14/lib/clang/14.0.0/include/stddef.h:1"]
-pub mod stddef_h {
-    #[c2rust::src_loc = "46:1"]
-    pub type size_t = libc::c_ulong;
-    #[c2rust::src_loc = "89:11"]
-    pub const NULL: libc::c_int = 0 as libc::c_int;
-    #[c2rust::src_loc = "89:11"]
-    pub const NULL_0: libc::c_int = 0 as libc::c_int;
-}
-#[c2rust::header_src = "/usr/lib/llvm-14/lib/clang/14.0.0/include/stdarg.h:1"]
-pub mod stdarg_h {
-    #[c2rust::src_loc = "14:1"]
-    pub type va_list = __builtin_va_list;
-    use super::internal::__builtin_va_list;
-}
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/types.h:1"]
-pub mod types_h {
-    #[c2rust::src_loc = "152:1"]
-    pub type __off_t = libc::c_long;
-    #[c2rust::src_loc = "153:1"]
-    pub type __off64_t = libc::c_long;
-}
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:1"]
-pub mod struct_FILE_h {
-    #[derive(Copy, Clone)]
-    #[repr(C)]
-    #[c2rust::src_loc = "49:8"]
-    pub struct _IO_FILE {
-        pub _flags: libc::c_int,
-        pub _IO_read_ptr: *mut libc::c_char,
-        pub _IO_read_end: *mut libc::c_char,
-        pub _IO_read_base: *mut libc::c_char,
-        pub _IO_write_base: *mut libc::c_char,
-        pub _IO_write_ptr: *mut libc::c_char,
-        pub _IO_write_end: *mut libc::c_char,
-        pub _IO_buf_base: *mut libc::c_char,
-        pub _IO_buf_end: *mut libc::c_char,
-        pub _IO_save_base: *mut libc::c_char,
-        pub _IO_backup_base: *mut libc::c_char,
-        pub _IO_save_end: *mut libc::c_char,
-        pub _markers: *mut _IO_marker,
-        pub _chain: *mut _IO_FILE,
-        pub _fileno: libc::c_int,
-        pub _flags2: libc::c_int,
-        pub _old_offset: __off_t,
-        pub _cur_column: libc::c_ushort,
-        pub _vtable_offset: libc::c_schar,
-        pub _shortbuf: [libc::c_char; 1],
-        pub _lock: *mut libc::c_void,
-        pub _offset: __off64_t,
-        pub _codecvt: *mut _IO_codecvt,
-        pub _wide_data: *mut _IO_wide_data,
-        pub _freeres_list: *mut _IO_FILE,
-        pub _freeres_buf: *mut libc::c_void,
-        pub __pad5: size_t,
-        pub _mode: libc::c_int,
-        pub _unused2: [libc::c_char; 20],
-    }
-    #[c2rust::src_loc = "43:1"]
-    pub type _IO_lock_t = ();
-    use super::stddef_h::size_t;
-    use super::types_h::{__off64_t, __off_t};
-    extern "C" {
-        #[c2rust::src_loc = "38:8"]
-        pub type _IO_wide_data;
-        #[c2rust::src_loc = "37:8"]
-        pub type _IO_codecvt;
-        #[c2rust::src_loc = "36:8"]
-        pub type _IO_marker;
-    }
-}
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/types/FILE.h:1"]
-pub mod FILE_h {
-    #[c2rust::src_loc = "7:1"]
-    pub type FILE = _IO_FILE;
-    use super::struct_FILE_h::_IO_FILE;
-}
+
 #[c2rust::header_src = "/home/ember/src/tinylisp/tinylisp.h:1"]
 pub mod tinylisp_h {
+    use libc::size_t;
     #[derive(Copy, Clone)]
     #[repr(C)]
     #[c2rust::src_loc = "417:8"]
@@ -426,7 +339,6 @@ pub mod tinylisp_h {
     pub const TL_APPLY_GETCHAR: libc::c_int = -(6 as libc::c_int);
     #[c2rust::src_loc = "902:9"]
     pub const TL_APPLY_DROP_RESCUE: libc::c_int = -5;
-    use super::stddef_h::size_t;
 }
 #[c2rust::header_src = "/home/ember/src/tinylisp/print.c:9"]
 pub mod print_c {
@@ -435,7 +347,7 @@ pub mod print_c {
     #[c2rust::src_loc = "109:2"]
     pub union C2RustUnnamed_6 {
         pub s: *const libc::c_char,
-        pub b: *mut tl_buffer,
+        pub b: ManuallyDrop<*mut tl_buffer>,
     }
     #[c2rust::src_loc = "7:9"]
     pub const QUOTED_SYM_CHARS: [libc::c_char; 22] = unsafe {
@@ -450,7 +362,7 @@ pub mod print_c {
             if tl_is_pair!(cur) {
                 tl_printf(in_0, b". \0" as *const u8 as *const libc::c_char);
                 tl_print(in_0, cur);
-                cur = NULL as *mut tl_object;
+                cur = std::ptr::null_mut() as *mut tl_object;
             } else {
                 tl_print(in_0, tl_first!(cur));
                 if !tl_next!(cur).is_null() {
@@ -481,7 +393,7 @@ pub mod print_c {
             i = i.wrapping_add(1);
             m = m.offset(1);
         }
-        return NULL as *mut libc::c_char;
+        return std::ptr::null_mut() as *mut libc::c_char;
     }
     #[no_mangle]
     #[c2rust::src_loc = "36:1"]
@@ -633,9 +545,9 @@ pub mod print_c {
                         cur = cur.offset(1);
                     }
                     115 => {
-                        temp.s = va_arg!(ap, const char *);
+                        temp.s = ap.arg();
                         if (temp.s).is_null() {
-                            tl_puts(in_0, b"<NULL>\0" as *const u8 as *const libc::c_char);
+                            tl_puts(in_0, b"<std::ptr::null_mut()>\0" as *const u8 as *const libc::c_char);
                         } else {
                             tl_puts(in_0, temp.s);
                         }
@@ -644,9 +556,9 @@ pub mod print_c {
                     112 => {
                         snprintf(
                             buf.as_mut_ptr(),
-                            32 as libc::c_int as libc::c_ulong,
+                            32,
                             b"%p\0" as *const u8 as *const libc::c_char,
-                            va_arg!(ap, void *),
+                            ap.arg::<*const ()>(),
                         );
                         tl_puts(in_0, buf.as_mut_ptr());
                         cur = cur.offset(1);
@@ -654,9 +566,9 @@ pub mod print_c {
                     108 => {
                         snprintf(
                             buf.as_mut_ptr(),
-                            32 as libc::c_int as libc::c_ulong,
+                            32,
                             b"%ld\0" as *const u8 as *const libc::c_char,
-                            va_arg!(ap, long),
+                            ap.arg::<libc::c_long>()
                         );
                         tl_puts(in_0, buf.as_mut_ptr());
                         cur = cur.offset(2 as libc::c_int as isize);
@@ -664,18 +576,18 @@ pub mod print_c {
                     100 => {
                         snprintf(
                             buf.as_mut_ptr(),
-                            32 as libc::c_int as libc::c_ulong,
+                            32,
                             b"%d\0" as *const u8 as *const libc::c_char,
-                            va_arg!(ap, int),
+                            ap.arg::<libc::c_int>()
                         );
                         tl_puts(in_0, buf.as_mut_ptr());
                         cur = cur.offset(1);
                     }
                     78 => {
-                        temp.b = va_arg!(ap, tl_buffer *);
+                        temp.b = ap.arg();
                         snprintf(
                             buf.as_mut_ptr(),
-                            32 as libc::c_int as libc::c_ulong,
+                            32,
                             b"%ld\0" as *const u8 as *const libc::c_char,
                             (*temp.b).len,
                         );
@@ -688,7 +600,7 @@ pub mod print_c {
                         cur = cur.offset(1);
                     }
                     79 => {
-                        tl_print(in_0, va_arg!(ap, tl_object *));
+                        tl_print(in_0, ap.arg());
                         cur = cur.offset(1);
                     }
                     _ => {
@@ -705,127 +617,7 @@ pub mod print_c {
         }
     }
 }
-#[c2rust::header_src = "/usr/include/ctype.h:10"]
-pub mod ctype_h {
-    #[c2rust::src_loc = "51:3"]
-    pub const _ISdigit: C2RustUnnamed_7 = 2048;
-    #[c2rust::src_loc = "46:1"]
-    pub type C2RustUnnamed_7 = libc::c_uint;
-    #[c2rust::src_loc = "59:3"]
-    pub const _ISalnum: C2RustUnnamed_7 = 8;
-    #[c2rust::src_loc = "58:3"]
-    pub const _ISpunct: C2RustUnnamed_7 = 4;
-    #[c2rust::src_loc = "57:3"]
-    pub const _IScntrl: C2RustUnnamed_7 = 2;
-    #[c2rust::src_loc = "56:3"]
-    pub const _ISblank: C2RustUnnamed_7 = 1;
-    #[c2rust::src_loc = "55:3"]
-    pub const _ISgraph: C2RustUnnamed_7 = 32768;
-    #[c2rust::src_loc = "54:3"]
-    pub const _ISprint: C2RustUnnamed_7 = 16384;
-    #[c2rust::src_loc = "53:3"]
-    pub const _ISspace: C2RustUnnamed_7 = 8192;
-    #[c2rust::src_loc = "52:3"]
-    pub const _ISxdigit: C2RustUnnamed_7 = 4096;
-    #[c2rust::src_loc = "50:3"]
-    pub const _ISalpha: C2RustUnnamed_7 = 1024;
-    #[c2rust::src_loc = "49:3"]
-    pub const _ISlower: C2RustUnnamed_7 = 512;
-    #[c2rust::src_loc = "48:3"]
-    pub const _ISupper: C2RustUnnamed_7 = 256;
-    extern "C" {
-        #[c2rust::src_loc = "79:1"]
-        pub fn __ctype_b_loc() -> *mut *const libc::c_ushort;
-    }
-}
-#[c2rust::header_src = "/usr/include/string.h:1"]
-pub mod string_h {
-    extern "C" {
-        #[c2rust::src_loc = "141:14"]
-        pub fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
-        #[c2rust::src_loc = "407:15"]
-        pub fn strlen(_: *const libc::c_char) -> libc::c_ulong;
-        #[c2rust::src_loc = "64:12"]
-        pub fn memcmp(
-            _: *const libc::c_void,
-            _: *const libc::c_void,
-            _: libc::c_ulong,
-        ) -> libc::c_int;
-        #[c2rust::src_loc = "61:14"]
-        pub fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
-        #[c2rust::src_loc = "47:14"]
-        pub fn memmove(
-            _: *mut libc::c_void,
-            _: *const libc::c_void,
-            _: libc::c_ulong,
-        ) -> *mut libc::c_void;
-        #[c2rust::src_loc = "43:14"]
-        pub fn memcpy(
-            _: *mut libc::c_void,
-            _: *const libc::c_void,
-            _: libc::c_ulong,
-        ) -> *mut libc::c_void;
-    }
-}
-#[c2rust::header_src = "/usr/include/stdio.h:1"]
-pub mod stdio_h {
-    #[c2rust::src_loc = "104:9"]
-    pub const EOF: libc::c_int = -1;
-    use super::FILE_h::FILE;
-    extern "C" {
-        #[c2rust::src_loc = "144:14"]
-        pub static mut stdout: *mut FILE;
-        #[c2rust::src_loc = "145:14"]
-        pub static mut stderr: *mut FILE;
-        #[c2rust::src_loc = "230:1"]
-        pub fn fflush(__stream: *mut FILE) -> libc::c_int;
-        #[c2rust::src_loc = "350:12"]
-        pub fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
-        #[c2rust::src_loc = "378:12"]
-        pub fn snprintf(
-            _: *mut libc::c_char,
-            _: libc::c_ulong,
-            _: *const libc::c_char,
-            _: ...
-        ) -> libc::c_int;
-        #[c2rust::src_loc = "520:1"]
-        pub fn getchar() -> libc::c_int;
-        #[c2rust::src_loc = "549:1"]
-        pub fn fputc(__c: libc::c_int, __stream: *mut FILE) -> libc::c_int;
-        #[c2rust::src_loc = "556:1"]
-        pub fn putchar(__c: libc::c_int) -> libc::c_int;
-        #[c2rust::src_loc = "681:15"]
-        pub fn fwrite(
-            _: *const libc::c_void,
-            _: libc::c_ulong,
-            _: libc::c_ulong,
-            _: *mut FILE,
-        ) -> libc::c_ulong;
-    }
-}
-#[c2rust::header_src = "/usr/include/stdlib.h:1"]
-pub mod stdlib_h {
-    extern "C" {
-        #[c2rust::src_loc = "551:14"]
-        pub fn realloc(_: *mut libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
-        #[c2rust::src_loc = "555:13"]
-        pub fn free(_: *mut libc::c_void);
-        #[c2rust::src_loc = "624:13"]
-        pub fn exit(_: libc::c_int) -> !;
-    }
-}
-#[c2rust::header_src = "/usr/include/assert.h:1"]
-pub mod assert_h {
-    extern "C" {
-        #[c2rust::src_loc = "69:1"]
-        pub fn __assert_fail(
-            __assertion: *const libc::c_char,
-            __file: *const libc::c_char,
-            __line: libc::c_uint,
-            __function: *const libc::c_char,
-        ) -> !;
-    }
-}
+
 #[c2rust::header_src = "/home/ember/src/tinylisp/builtin.c:1"]
 pub mod builtin_c {
     #[link_section = "tl_init_ents"]
@@ -1098,14 +890,9 @@ pub mod builtin_c {
             );
             return;
         }
-        tl_eval_and_then!(in, val, key, _tl_cf_define_k)(
-            tl_eval_and_then!(in, val, key, _tl_cf_define_k),
-            tl_eval_and_then!(in, val, key, _tl_cf_define_k),
-            tl_eval_and_then!(in, val, key, _tl_cf_define_k),
-            tl_eval_and_then!(in, val, key, _tl_cf_define_k),
-            b"tl_eval_and_then:_tl_cf_define_k\0" as *const u8 as *const libc::c_char,
-        );
+        tl_eval_and_then!(in_0, val, key, _tl_cf_define_k);
     }
+    use super::_tl_eval_and_then;
     #[c2rust::src_loc = "63:1"]
     pub unsafe extern "C" fn _tl_cf_define_k(
         mut in_0: *mut tl_interp,
@@ -1352,11 +1139,11 @@ pub mod builtin_c {
             );
             return;
         }
-        tl_eval_and_then!(in, val, key, _tl_cf_set_k)(
-            tl_eval_and_then!(in, val, key, _tl_cf_set_k),
-            tl_eval_and_then!(in, val, key, _tl_cf_set_k),
-            tl_eval_and_then!(in, val, key, _tl_cf_set_k),
-            tl_eval_and_then!(in, val, key, _tl_cf_set_k),
+        tl_eval_and_then!(in_0, val, key, _tl_cf_set_k)(
+            tl_eval_and_then!(in_0, val, key, _tl_cf_set_k),
+            tl_eval_and_then!(in_0, val, key, _tl_cf_set_k),
+            tl_eval_and_then!(in_0, val, key, _tl_cf_set_k),
+            tl_eval_and_then!(in_0, val, key, _tl_cf_set_k),
             b"tl_eval_and_then:_tl_cf_set_k\0" as *const u8 as *const libc::c_char,
         );
     }
@@ -1392,11 +1179,11 @@ pub mod builtin_c {
             };
             return;
         }
-        tl_eval_and_then!(in, cond, tl_next(args), _tl_cf_if_k)(
-            tl_eval_and_then!(in, cond, tl_next(args), _tl_cf_if_k),
-            tl_eval_and_then!(in, cond, tl_next(args), _tl_cf_if_k),
-            tl_eval_and_then!(in, cond, tl_next(args), _tl_cf_if_k),
-            tl_eval_and_then!(in, cond, tl_next(args), _tl_cf_if_k),
+        tl_eval_and_then!(in_0, cond, tl_next(args), _tl_cf_if_k)(
+            tl_eval_and_then!(in_0, cond, tl_next(args), _tl_cf_if_k),
+            tl_eval_and_then!(in_0, cond, tl_next(args), _tl_cf_if_k),
+            tl_eval_and_then!(in_0, cond, tl_next(args), _tl_cf_if_k),
+            tl_eval_and_then!(in_0, cond, tl_next(args), _tl_cf_if_k),
             b"tl_eval_and_then:_tl_cf_if_k\0" as *const u8 as *const libc::c_char,
         );
     }
@@ -1501,7 +1288,7 @@ pub mod builtin_c {
             );
             return;
         }
-        name_cstr = tl_alloc_malloc!(in, name -> nm -> here.len + 1);
+        name_cstr = tl_alloc_malloc!(in_0, name -> nm -> here.len + 1);
         memcpy(
             name_cstr as *mut libc::c_void,
             (*(*name).c2rust_unnamed.nm).here.data as *const libc::c_void,
@@ -5155,7 +4942,7 @@ pub mod debug_c {
         if obj.is_null() {
             fprintf(
                 stderr,
-                b"() (NULL object)\n\0" as *const u8 as *const libc::c_char,
+                b"() (std::ptr::null_mut() object)\n\0" as *const u8 as *const libc::c_char,
             );
             return;
         }
@@ -5306,13 +5093,7 @@ pub mod debug_c {
     ) {
         fprintf(stderr, b"EXPR:\n\0" as *const u8 as *const libc::c_char);
         tl_dbg_print(tl_first!(args), 0 as libc::c_int);
-        tl_eval_and_then!(in, tl_first(args), NULL, _tl_cf_debug_print_k)(
-            tl_eval_and_then!(in, tl_first(args), NULL, _tl_cf_debug_print_k),
-            tl_eval_and_then!(in, tl_first(args), NULL, _tl_cf_debug_print_k),
-            tl_eval_and_then!(in, tl_first(args), NULL, _tl_cf_debug_print_k),
-            tl_eval_and_then!(in, tl_first(args), NULL, _tl_cf_debug_print_k),
-            b"tl_eval_and_then:_tl_cf_debug_print_k\0" as *const u8 as *const libc::c_char,
-        );
+        tl_eval_and_then!(in_0, tl_first(args), std::ptr::null_mut(), _tl_cf_debug_print_k);
     }
     #[link_section = "tl_init_ents"]
     #[used]
@@ -6980,11 +6761,11 @@ pub mod eval_c {
                 NULL_0 as *mut tl_object_s
             }) == (*in_0).true_
             {
-                tl_eval_and_then!(in, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k)(
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
+                tl_eval_and_then!(in_0, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k)(
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), new_state, _tl_eval_all_args_k),
                     b"tl_eval_and_then:_tl_eval_all_args_k\0" as *const u8 as *const libc::c_char,
                 );
             } else {
@@ -7167,11 +6948,11 @@ pub mod eval_c {
                 NULL_0 as *mut tl_object_s
             }) == (*in_0).true_
             {
-                tl_eval_and_then!(in, tl_first(tl_first(args)), state, _tl_eval_all_args_k)(
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
-                    tl_eval_and_then!(in, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
+                tl_eval_and_then!(in_0, tl_first(tl_first(args)), state, _tl_eval_all_args_k)(
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
+                    tl_eval_and_then!(in_0, tl_first(tl_first(args)), state, _tl_eval_all_args_k),
                     b"tl_eval_and_then:_tl_eval_all_args_k\0" as *const u8 as *const libc::c_char,
                 );
             } else {
@@ -7436,15 +7217,7 @@ pub mod interp_c {
         pub static mut __stop_tl_init_ents: tl_init_ent;
     }
 }
-#[c2rust::header_src = "/usr/include/unistd.h:6"]
-pub mod unistd_h {
-    #[c2rust::src_loc = "210:9"]
-    pub const STDIN_FILENO: libc::c_int = 0 as libc::c_int;
-    extern "C" {
-        #[c2rust::src_loc = "809:1"]
-        pub fn isatty(__fd: libc::c_int) -> libc::c_int;
-    }
-}
+
 #[c2rust::header_src = "/home/ember/src/tinylisp/main.c:6"]
 pub mod main_c {
     #[no_mangle]
@@ -7556,11 +7329,11 @@ pub mod main_c {
         }
         let ref mut fresh194 = (*in_0).current;
         *fresh194 = TL_EMPTY_LIST as *mut tl_object;
-        tl_eval_and_then!(in, expr, NULL, _main_k)(
-            tl_eval_and_then!(in, expr, NULL, _main_k),
-            tl_eval_and_then!(in, expr, NULL, _main_k),
-            tl_eval_and_then!(in, expr, NULL, _main_k),
-            tl_eval_and_then!(in, expr, NULL, _main_k),
+        tl_eval_and_then!(in_0, expr, std::ptr::null_mut(), _main_k)(
+            tl_eval_and_then!(in_0, expr, std::ptr::null_mut(), _main_k),
+            tl_eval_and_then!(in_0, expr, std::ptr::null_mut(), _main_k),
+            tl_eval_and_then!(in_0, expr, std::ptr::null_mut(), _main_k),
+            tl_eval_and_then!(in_0, expr, std::ptr::null_mut(), _main_k),
             b"tl_eval_and_then:_main_k\0" as *const u8 as *const libc::c_char,
         );
     }
@@ -7774,7 +7547,7 @@ pub mod main_c {
             .pair
             .first
         } else {
-            NULL as *mut tl_object_s
+            std::ptr::null_mut() as *mut tl_object_s
         };
         tl_print(in_0, callex);
         fflush(stdout);
@@ -7816,7 +7589,7 @@ pub mod main_c {
         {
             (*(*in_0).conts).data.pair.first
         } else {
-            NULL as *mut tl_object_s
+            std::ptr::null_mut() as *mut tl_object_s
         };
         while !l_cont.is_null() {
             fprintf(stderr, b"\n\0" as *const u8 as *const libc::c_char);
@@ -7840,7 +7613,7 @@ pub mod main_c {
             {
                 (*l_cont).data.pair.next
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
             cont = (if !l_cont.is_null()
                 && (l_cont.is_null()
@@ -7848,7 +7621,7 @@ pub mod main_c {
             {
                 (*l_cont).data.pair.first
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
         }
     }
@@ -7949,7 +7722,7 @@ pub mod main_c {
                 {
                     (*in_0.env).data.pair.first
                 } else {
-                    NULL as *mut tl_object_s
+                    std::ptr::null_mut() as *mut tl_object_s
                 };
                 while !l_frm.is_null() {
                     fprintf(stderr, b"\nFrame\0" as *const u8 as *const libc::c_char);
@@ -7969,7 +7742,7 @@ pub mod main_c {
                     {
                         (*l_frm).data.pair.next
                     } else {
-                        NULL as *mut tl_object_s
+                        std::ptr::null_mut() as *mut tl_object_s
                     });
                     frm = (if !l_frm.is_null()
                         && (l_frm.is_null()
@@ -7978,12 +7751,12 @@ pub mod main_c {
                     {
                         (*l_frm).data.pair.first
                     } else {
-                        NULL as *mut tl_object_s
+                        std::ptr::null_mut() as *mut tl_object_s
                     });
                 }
                 fprintf(stderr, b"\n\0" as *const u8 as *const libc::c_char);
                 let ref mut fresh202 = tl_error_clear!(& in);
-                *fresh202 = NULL as *mut tl_object;
+                *fresh202 = std::ptr::null_mut() as *mut tl_object;
             }
             in_0.conts = TL_EMPTY_LIST as *mut tl_object;
             in_0.values = TL_EMPTY_LIST as *mut tl_object;
@@ -7991,40 +7764,22 @@ pub mod main_c {
         }
         return 0;
     }
-    use super::bits_dlfcn_h::{RTLD_GLOBAL, RTLD_NOW};
+    use libc::{RTLD_GLOBAL, RTLD_NOW};
     use super::dlfcn_h::{dlerror, dlopen, dlsym};
     use super::eval_c::tl_run_until_done;
     use super::interp_c::{tl_interp_cleanup, tl_interp_init};
     use super::object_c::{tl_gc, tl_new_int, tl_new_pair, tl_new_sym};
     use super::print_c::{tl_print, tl_printf};
-    use super::stddef_h::{size_t, NULL};
-    use super::stdio_h::{fflush, fprintf, stderr, stdout};
-    use super::stdlib_h::exit;
+    use libc::{size_t};
+    use libc::{fflush, fprintf, stderr, stdout};
+    use libc::exit;
     use super::tinylisp_h::{
         tl_init_ent, tl_interp, tl_interp_s, tl_name, tl_ns, tl_object, tl_object_s,
         ObjectTag, TL_EMPTY_LIST, TL_FMASK, TL_F_MARK, TL_INT, TL_PAIR,
     };
-    use super::unistd_h::{isatty, STDIN_FILENO};
+    use libc::{isatty, STDIN_FILENO};
 }
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/dlfcn.h:6"]
-pub mod bits_dlfcn_h {
-    #[c2rust::src_loc = "25:9"]
-    pub const RTLD_NOW: libc::c_int = 0x2 as libc::c_int;
-    #[c2rust::src_loc = "33:9"]
-    pub const RTLD_GLOBAL: libc::c_int = 0x100 as libc::c_int;
-}
-#[c2rust::header_src = "/usr/include/dlfcn.h:6"]
-pub mod dlfcn_h {
-    extern "C" {
-        #[c2rust::src_loc = "84:1"]
-        pub fn dlerror() -> *mut libc::c_char;
-        #[c2rust::src_loc = "66:1"]
-        pub fn dlsym(__handle: *mut libc::c_void, __name: *const libc::c_char)
-            -> *mut libc::c_void;
-        #[c2rust::src_loc = "58:1"]
-        pub fn dlopen(__file: *const libc::c_char, __mode: libc::c_int) -> *mut libc::c_void;
-    }
-}
+
 #[c2rust::header_src = "/home/ember/src/tinylisp/ns.c:7"]
 pub mod ns_c {
     #[no_mangle]
@@ -8245,7 +8000,7 @@ pub mod ns_c {
         *fresh211 = 0 as libc::c_int as size_t;
         (*cur).num_children = *fresh211;
         let ref mut fresh212 = (*cur).children;
-        *fresh212 = NULL as *mut tl_child;
+        *fresh212 = std::ptr::null_mut() as *mut tl_child;
         return cur;
     }
     #[no_mangle]
@@ -8258,13 +8013,13 @@ pub mod ns_c {
             ::std::mem::size_of::<tl_name>() as libc::c_ulong,
         ) as *mut tl_name;
         let ref mut fresh214 = (*(*ns).root).here.data;
-        *fresh214 = NULL as *mut libc::c_char;
+        *fresh214 = std::ptr::null_mut() as *mut libc::c_char;
         (*(*ns).root).here.len = 0 as libc::c_int as size_t;
         let ref mut fresh215 = (*(*ns).root).sz_children;
         *fresh215 = 0 as libc::c_int as size_t;
         (*(*ns).root).num_children = *fresh215;
         let ref mut fresh216 = (*(*ns).root).children;
-        *fresh216 = NULL as *mut tl_child;
+        *fresh216 = std::ptr::null_mut() as *mut tl_child;
     }
     #[no_mangle]
     #[c2rust::src_loc = "252:1"]
@@ -8278,7 +8033,7 @@ pub mod ns_c {
         }
         cur = (*ns).root;
         let ref mut fresh217 = (*cur).chain;
-        *fresh217 = NULL as *mut tl_name_s;
+        *fresh217 = std::ptr::null_mut() as *mut tl_name_s;
         while !cur.is_null() {
             index = 0 as libc::c_int as size_t;
             while index < (*cur).num_children {
@@ -8326,7 +8081,7 @@ pub mod ns_c {
             i = i.wrapping_add(1);
         }
         if nm.is_null() {
-            tl_printf(in_0, b"[NULL]\n\0" as *const u8 as *const libc::c_char);
+            tl_printf(in_0, b"[std::ptr::null_mut()]\n\0" as *const u8 as *const libc::c_char);
             return;
         }
         tl_printf(
@@ -8353,7 +8108,7 @@ pub mod ns_c {
             i = i.wrapping_add(1);
         }
         if child.is_null() {
-            tl_printf(in_0, b" <NULL>\n\0" as *const u8 as *const libc::c_char);
+            tl_printf(in_0, b" <std::ptr::null_mut()>\n\0" as *const u8 as *const libc::c_char);
             return;
         }
         tl_printf(
@@ -8385,7 +8140,7 @@ pub mod ns_c {
         let mut i: size_t = 0;
         let mut cur = (*ns).root;
         let ref mut fresh220 = (*cur).chain;
-        *fresh220 = NULL as *mut tl_name_s;
+        *fresh220 = std::ptr::null_mut() as *mut tl_name_s;
         while !cur.is_null() {
             i = 0 as libc::c_int as size_t;
             while i < (*cur).num_children {
@@ -8484,8 +8239,8 @@ pub mod ns_c {
     pub static mut init_tl_cf_print_ns: tl_init_ent = unsafe { TL_CF!(print_ns, "print-ns") };
     use super::object_c::{tl_new_pair, tl_new_sym_name};
     use super::print_c::{tl_printf, tl_puts};
-    use super::stddef_h::{size_t, NULL};
-    use super::string_h::{memcmp, memcpy, memmove};
+    use libc::{size_t};
+    use libc::{memcmp, memcpy, memmove};
     use super::tinylisp_h::{
         tl_buffer, tl_child, tl_init_ent, tl_interp, tl_name, tl_name_s, tl_ns, tl_object,
         tl_object_s, ObjectTag, TL_EMPTY_LIST, TL_PAIR,
@@ -8512,7 +8267,7 @@ pub mod object_c {
         let ref mut fresh226 = (*obj).gclink.next_alloc;
         *fresh226 = (*in_0).top_alloc;
         let ref mut fresh227 = (*obj).prev_alloc;
-        *fresh227 = NULL as *mut tl_object_s;
+        *fresh227 = std::ptr::null_mut() as *mut tl_object_s;
         if !((*in_0).top_alloc).is_null() {
             let ref mut fresh228 = (*(*in_0).top_alloc).prev_alloc;
             *fresh228 = obj;
@@ -8543,7 +8298,7 @@ pub mod object_c {
         } else {
             return tl_new_sym_data(
                 in_0,
-                NULL as *const libc::c_char,
+                std::ptr::null_mut() as *const libc::c_char,
                 0 as libc::c_int as size_t,
             );
         };
@@ -8611,7 +8366,7 @@ pub mod object_c {
         *fresh235 = if !name.is_null() {
             tl_strdup(in_0, name)
         } else {
-            NULL as *mut libc::c_char
+            std::ptr::null_mut() as *mut libc::c_char
         };
         return obj;
     }
@@ -8799,7 +8554,7 @@ pub mod object_c {
         {
             (*l).data.pair.first
         } else {
-            NULL as *mut tl_object_s
+            std::ptr::null_mut() as *mut tl_object_s
         };
         while !l_item.is_null() {
             cnt = cnt.wrapping_add(1);
@@ -8809,7 +8564,7 @@ pub mod object_c {
             {
                 (*l_item).data.pair.next
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
             item = (if !l_item.is_null()
                 && (l_item.is_null()
@@ -8817,7 +8572,7 @@ pub mod object_c {
             {
                 (*l_item).data.pair.first
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
         }
         return cnt;
@@ -8835,7 +8590,7 @@ pub mod object_c {
         {
             (*l).data.pair.first
         } else {
-            NULL as *mut tl_object_s
+            std::ptr::null_mut() as *mut tl_object_s
         };
         while !l_item.is_null() {
             res = tl_new_pair(in_0, item, res);
@@ -8845,7 +8600,7 @@ pub mod object_c {
             {
                 (*l_item).data.pair.next
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
             item = (if !l_item.is_null()
                 && (l_item.is_null()
@@ -8853,7 +8608,7 @@ pub mod object_c {
             {
                 (*l_item).data.pair.first
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
         }
         return res;
@@ -8872,7 +8627,7 @@ pub mod object_c {
         {
             (*l).data.pair.first
         } else {
-            NULL as *mut tl_object_s
+            std::ptr::null_mut() as *mut tl_object_s
         };
         while !l_item.is_null() {
             res = tl_new_pair(in_0, item, res);
@@ -8882,7 +8637,7 @@ pub mod object_c {
             {
                 (*l_item).data.pair.next
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
             item = (if !l_item.is_null()
                 && (l_item.is_null()
@@ -8890,7 +8645,7 @@ pub mod object_c {
             {
                 (*l_item).data.pair.first
             } else {
-                NULL as *mut tl_object_s
+                std::ptr::null_mut() as *mut tl_object_s
             });
         }
         return res;
@@ -8904,11 +8659,11 @@ pub mod object_c {
         let mut s: size_t = 0;
         let mut buf = 0 as *mut libc::c_char;
         if str.is_null() {
-            return NULL as *mut libc::c_char;
+            return std::ptr::null_mut() as *mut libc::c_char;
         }
         s = (strlen(str)).wrapping_add(1 as libc::c_int as libc::c_ulong);
         if s == 0 {
-            return NULL as *mut libc::c_char;
+            return std::ptr::null_mut() as *mut libc::c_char;
         }
         buf = tl_alloc_malloc!(in, s);
         if buf.is_null() {
@@ -8926,13 +8681,13 @@ pub mod object_c {
     ) -> *mut libc::c_void {
         let mut region = tl_alloc_malloc!(in, n * s);
         if region.is_null() {
-            return NULL as *mut libc::c_void;
+            return std::ptr::null_mut() as *mut libc::c_void;
         }
         return memset(region, 0 as libc::c_int, n.wrapping_mul(s));
     }
     use super::ns_c::tl_ns_resolve;
-    use super::stddef_h::{size_t, NULL};
-    use super::string_h::{memset, strcpy, strlen};
+    use super::stddef_h::{size_t};
+    use libc::{memset, strcpy, strlen};
     use super::tinylisp_h::{
         tl_buffer, tl_interp, tl_name, tl_ns, tl_object, tl_object_s, ObjectTag, TL_CFUNC,
         TL_CFUNC_BYVAL, TL_CONT, TL_EMPTY_LIST, TL_FMASK, TL_FUNC, TL_F_MARK, TL_INT, TL_MACRO,
@@ -9188,7 +8943,7 @@ pub mod read_c {
                     tl_alloc_free!(in, in -> read_buffer),
                 );
                 let ref mut fresh262 = (*in_0).read_buffer;
-                *fresh262 = NULL as *mut libc::c_char;
+                *fresh262 = std::ptr::null_mut() as *mut libc::c_char;
                 let ref mut fresh263 = (*in_0).values;
                 *fresh263 =
                     tl_new_pair(in_0, tl_new_pair(in_0, sym, (*in_0).false_), (*in_0).values);
@@ -9693,7 +9448,7 @@ pub mod read_c {
                     tl_alloc_free!(in, in -> read_buffer),
                 );
                 let ref mut fresh285 = (*in_0).read_buffer;
-                *fresh285 = NULL as *mut libc::c_char;
+                *fresh285 = std::ptr::null_mut() as *mut libc::c_char;
                 let ref mut fresh286 = (*in_0).values;
                 *fresh286 =
                     tl_new_pair(in_0, tl_new_pair(in_0, sym, (*in_0).false_), (*in_0).values);
@@ -9875,7 +9630,7 @@ pub mod read_c {
                 {
                     (*(*in_0).prefixes).data.pair.first
                 } else {
-                    NULL as *mut tl_object_s
+                    std::ptr::null_mut() as *mut tl_object_s
                 };
                 while !l_kv.is_null() {
                     let mut k = tl_first!(kv);
@@ -9923,7 +9678,7 @@ pub mod read_c {
                     {
                         (*l_kv).data.pair.next
                     } else {
-                        NULL as *mut tl_object_s
+                        std::ptr::null_mut() as *mut tl_object_s
                     });
                     kv = (if !l_kv.is_null()
                         && (l_kv.is_null()
@@ -9932,7 +9687,7 @@ pub mod read_c {
                     {
                         (*l_kv).data.pair.first
                     } else {
-                        NULL as *mut tl_object_s
+                        std::ptr::null_mut() as *mut tl_object_s
                     });
                 }
                 tl_getc_and_then!(in, state, _tl_read_sym_k)(
@@ -9944,18 +9699,17 @@ pub mod read_c {
             }
         };
     }
-    use super::assert_h::__assert_fail;
     use super::eval_c::tl_push_apply;
     use super::object_c::{
         tl_list_rvs, tl_list_rvs_improp, tl_new_int, tl_new_pair, tl_new_sym, tl_new_sym_data,
         tl_new_then,
     };
-    use super::stddef_h::{size_t, NULL};
-    use super::stdio_h::EOF;
+    use libc::{size_t};
+    use libc::EOF;
     use super::tinylisp_h::{tl_interp, tl_object, tl_object_s, ObjectTag, TL_INT, TL_PAIR};
 }
-use self::assert_h::__assert_fail;
-pub use self::bits_dlfcn_h::{RTLD_GLOBAL, RTLD_NOW};
+use std::mem::ManuallyDrop;
+
 pub use self::builtin_c::{
     _tl_cf_define_k, _tl_cf_if_k, _tl_cf_set_k, _tl_readc_k, _unboolify, init_tl_cf_add,
     init_tl_cf_all_objects, init_tl_cf_apply, init_tl_cf_call_with_current_continuation,
@@ -9981,22 +9735,16 @@ pub use self::ctype_h::{
 pub use self::debug_c::{
     _indent, _tl_cf_debug_print_k, init_tl_cf_debug_print, tl_cf_debug_print, tl_dbg_print,
 };
-use self::dlfcn_h::{dlerror, dlopen, dlsym};
 pub use self::env_c::{tl_env_get_kv, tl_env_set_global, tl_env_set_local, tl_frm_set};
 pub use self::eval_c::{
     _tl_apply_next_body_callable_k, _tl_eval_all_args, _tl_eval_all_args_k, _tl_eval_and_then,
     _tl_getc_and_then, tl_apply_next, tl_push_apply, tl_push_eval, tl_run_until_done,
 };
-pub use self::internal::{__builtin_va_list, __va_list_tag};
 pub use self::interp_c::{
     __start_tl_init_ents, __stop_tl_init_ents, _modloadf, _readf, _reallocf, _writef,
     tl_interp_cleanup, tl_interp_init, tl_interp_init_alloc,
 };
-use self::main_c::{
-    _global_in, _main_k, _main_read_k, _print_cont, _print_cont_stack, init_tl_cf_exit,
-    init_tl_cf_quiet, main_0, my_modloadf, print_cont_stack, quiet, running, tl_cf_exit,
-    tl_cf_quiet, QUIET_NO_TRUE, QUIET_NO_VALUE, QUIET_OFF,
-};
+
 pub use self::ns_c::{
     _tl_add_symbol, init_tl_cf_all_symbols, init_tl_cf_print_ns, tl_buf_slice, tl_cf_all_symbols,
     tl_cf_print_ns, tl_ns_for_each, tl_ns_free, tl_ns_init, tl_ns_print, tl_ns_print_child,
@@ -10016,14 +9764,7 @@ pub use self::read_c::{
     _tl_read_pair_improp_check_k, _tl_read_pair_improp_k, _tl_read_string_k, _tl_read_sym_k,
     _tl_read_top_k, _tl_read_top_prefix_k, tl_read, DEFAULT_SYM_LEN,
 };
-pub use self::stdarg_h::va_list;
-pub use self::stddef_h::{size_t, NULL, NULL_0};
-pub use self::stdio_h::{
-    fflush, fprintf, fputc, fwrite, getchar, putchar, snprintf, stderr, stdout, EOF,
-};
-use self::stdlib_h::{exit, free, realloc};
-use self::string_h::{memcmp, memcpy, memmove, memset, strcpy, strlen};
-pub use self::struct_FILE_h::{_IO_codecvt, _IO_lock_t, _IO_marker, _IO_wide_data, _IO_FILE};
+ use libc::{size_t, snprintf};
 pub use self::tinylisp_h::{
     tl_buffer, tl_buffer_s, tl_child, tl_child_s, tl_init_ent, tl_init_ent_s, tl_init_ent_s_Inner,
     tl_init_ent_s_PADDING, tl_interp, tl_interp_s, tl_name, tl_name_s, tl_ns, tl_ns_s, tl_object,
@@ -10033,9 +9774,7 @@ pub use self::tinylisp_h::{
     TL_DEFAULT_GC_EVENTS, TL_EMPTY_LIST, TL_FMASK, TL_FUNC, TL_F_MARK, TL_F_PERMANENT, TL_INT,
     TL_MACRO, TL_PAIR, TL_RESULT_AGAIN, TL_RESULT_DONE, TL_RESULT_GETCHAR, TL_SYM, TL_THEN,
 };
-pub use self::types_h::{__off64_t, __off_t};
-pub use self::unistd_h::{isatty, STDIN_FILENO};
-pub use self::FILE_h::FILE;
+ use libc::{off_t};
 pub fn main() {
     unsafe { ::std::process::exit(main_0() as i32) }
 }
